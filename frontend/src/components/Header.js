@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Gamepad2, Sword, Map, Users, ShoppingCart } from 'lucide-react';
+import { Gamepad2, Sword, Map, Users, ShoppingCart, Wand2 } from 'lucide-react';
 
 const Header = () => {
   const location = useLocation();
@@ -9,6 +9,7 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Dashboard', icon: Gamepad2 },
     { path: '/characters', label: 'Characters', icon: Users },
+    { path: '/mint', label: 'AI Mint', icon: Wand2 },
     { path: '/quests', label: 'Quests', icon: Map },
     { path: '/arena', label: 'Arena', icon: Sword },
     { path: '/marketplace', label: 'Marketplace', icon: ShoppingCart },

@@ -8,6 +8,12 @@ const Quests = () => {
   const { quests, loading, completeQuest, updateQuestProgress } = useQuests();
   const [filter, setFilter] = useState('all');
 
+  const filteredQuests = quests.filter(quest => {
+    if (filter === 'all') return true;
+    if (filter === 'completed') return quest.status === 'completed';
+    return quest.type === filter;
+  });
+
   const getQuestTypeColor = (type) => {
     switch (type) {
       case 'daily': return '#ff6b6b';
@@ -81,16 +87,41 @@ const Quests = () => {
 
       {/* Quest Filters */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        <button className="btn btn-primary">All Quests</button>
-        <button className="btn btn-secondary">Daily</button>
-        <button className="btn btn-secondary">Weekly</button>
-        <button className="btn btn-secondary">Achievements</button>
-        <button className="btn btn-secondary">Completed</button>
+        <button 
+          className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setFilter('all')}
+        >
+          All Quests
+        </button>
+        <button 
+          className={`btn ${filter === 'daily' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setFilter('daily')}
+        >
+          Daily
+        </button>
+        <button 
+          className={`btn ${filter === 'weekly' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setFilter('weekly')}
+        >
+          Weekly
+        </button>
+        <button 
+          className={`btn ${filter === 'achievement' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setFilter('achievement')}
+        >
+          Achievements
+        </button>
+        <button 
+          className={`btn ${filter === 'completed' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setFilter('completed')}
+        >
+          Completed
+        </button>
       </div>
 
       {/* Quest List */}
       <div className="quest-list">
-        {quests.map((quest) => (
+        {filteredQuests.map((quest) => (
           <div key={quest.id} className="quest-card">
             <div className="quest-info" style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>

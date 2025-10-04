@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { Sword, Trophy, Users, Zap, Clock, Star } from 'lucide-react';
+import { Sword, Trophy, Users, Zap, Clock, Star, Gamepad2 } from 'lucide-react';
 import { useTournaments } from '../hooks/useTournaments';
+import ArenaGame from '../components/ArenaGame';
+import Leaderboard from '../components/Leaderboard';
 
 const Arena = () => {
   const { address, isConnected } = useAccount();
-  const { tournaments, activeBattles, loading, registerForTournament, simulateBattle } = useTournaments();
+  const { tournaments, activeBattles, loading } = useTournaments();
+  const [latestScore, setLatestScore] = useState(null);
+  const [activeTab, setActiveTab] = useState('game'); // game, tournaments, leaderboard
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -57,8 +61,81 @@ const Arena = () => {
     <div className="fade-in">
       <div style={{ marginBottom: '2rem' }}>
         <h1>Battle Arena</h1>
-        <p>Compete in automated cross-chain tournaments powered by Kwala</p>
+        <p>Play games, compete in tournaments, and climb the leaderboard!</p>
       </div>
+
+      {/* Arena Tabs */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '1rem', 
+        marginBottom: '2rem',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        paddingBottom: '1rem'
+      }}>
+        <button
+          className={`btn ${activeTab === 'game' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('game')}
+        >
+          <Gamepad2 size={16} style={{ marginRight: '0.5rem' }} />
+          Arena Game
+        </button>
+        <button
+          className={`btn ${activeTab === 'leaderboard' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('leaderboard')}
+        >
+          <Trophy size={16} style={{ marginRight: '0.5rem' }} />
+          Leaderboard
+        </button>
+        <button
+          className={`btn ${activeTab === 'tournaments' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('tournaments')}
+        >
+          <Sword size={16} style={{ marginRight: '0.5rem' }} />
+          Tournaments
+        </button>
+      </div>
+
+      {/* Arena Game Tab */}
+      {activeTab === 'game' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+          <div>
+            <h2 style={{ marginBottom: '1rem' }}>🎯 Arena Challenge</h2>
+            <ArenaGame onScoreUpdate={setLatestScore} />
+            
+            <div style={{ 
+              marginTop: '1rem',
+              padding: '1rem',
+              background: 'rgba(0, 212, 255, 0.1)',
+              borderRadius: '12px',
+              border: '1px solid rgba(0, 212, 255, 0.2)'
+            }}>
+              <h4 style={{ margin: '0 0 0.5rem 0', color: '#00d4ff' }}>How to Play:</h4>
+              <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem' }}>
+                <li>Click on targets to earn points</li>
+                <li>Golden targets give 5x points but disappear faster</li>
+                <li>Build combos for score multipliers</li>
+                <li>Higher scores = better leaderboard position</li>
+                <li>Weekly rewards based on final ranking</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div>
+            <Leaderboard newScore={latestScore} />
+          </div>
+        </div>
+      )}
+
+      {/* Leaderboard Tab */}
+      {activeTab === 'leaderboard' && (
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <Leaderboard newScore={latestScore} />
+        </div>
+      )}
+
+      {/* Tournaments Tab */}
+      {activeTab === 'tournaments' && (
+        <div>
 
       {/* Kwala Tournament Automation */}
       <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
@@ -277,6 +354,8 @@ const Arena = () => {
           </div>
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 };

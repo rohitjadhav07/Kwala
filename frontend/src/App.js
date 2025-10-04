@@ -16,6 +16,7 @@ import Characters from './pages/Characters';
 import Quests from './pages/Quests';
 import Arena from './pages/Arena';
 import Marketplace from './pages/Marketplace';
+import CharacterMint from './components/CharacterMint';
 import './App.css';
 
 // Define Polygon Amoy testnet
@@ -93,11 +94,33 @@ function App() {
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <Router>
             <div className="App">
+              {/* Animated Background Effects */}
+              <div className="stars">
+                {[...Array(9)].map((_, i) => (
+                  <div key={i} className="star" />
+                ))}
+              </div>
+              
+              <div className="sparks">
+                {[...Array(15)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="spark" 
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      animationDelay: `${Math.random() * 8}s`,
+                      animationDuration: `${6 + Math.random() * 4}s`
+                    }}
+                  />
+                ))}
+              </div>
+
               <Header />
               <main className="main-content">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/characters" element={<Characters />} />
+                  <Route path="/mint" element={<CharacterMint />} />
                   <Route path="/quests" element={<Quests />} />
                   <Route path="/arena" element={<Arena />} />
                   <Route path="/marketplace" element={<Marketplace />} />

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { ShoppingCart, TrendingUp, Zap, Star, Filter } from 'lucide-react';
-import { useMarketplace } from '../hooks/useMarketplace';
+import { useMarketplaceContract } from '../hooks/useMarketplaceContract';
 
 const Marketplace = () => {
   const { address, isConnected } = useAccount();
-  const { listings, loading, buyNFT } = useMarketplace();
+  const { listings, loading, buyNFT, isBuying } = useMarketplaceContract();
   const [filter, setFilter] = useState('all');
 
   const getRarityColor = (rarity) => {
@@ -37,12 +37,46 @@ const Marketplace = () => {
     }
   };
 
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [selectedChain, setSelectedChain] = useState('all');
+  const [selectedClass, setSelectedClass] = useState('all');
+  const [sortBy, setSortBy] = useState('price_low');
+
   const filteredListings = listings.filter(listing => {
-    if (filter === 'all') return true;
-    if (filter === 'class') return true; // Would implement class filtering
-    if (filter === 'rarity') return listing.rarity === 'legendary' || listing.rarity === 'epic';
-    if (filter === 'chain') return true; // Would implement chain filtering
+    // Price filter (convert to USD for comparison)
+    const priceUSD = parseFloat(listing.priceUSD.replace('$', ''));
+    if (priceUSD < priceRange[0] || priceUSD > priceRange[1]) return false;
+    
+    // Rarity filter
+    if (filter === 'rarity' && !['legendary', 'epic'].includes(listing.rarity)) return false;
+    
+    // Chain filter
+    if (selectedChain !== 'all' && listing.chain !== selectedChain) return false;
+    
+    // Class filter
+    if (selectedClass !== 'all' && listing.class !== selectedClass) return false;
+    
+    // Trending filter (high battle power)
+    if (filter === 'trending' && listing.battlePower < 5000) return false;
+    
+    // Ending soon filter
+    if (filter === 'ending') {
+      const timeLeft = listing.timeLeft;
+      if (!timeLeft.includes('h') || timeLeft.includes('d')) return false;
+    }
+    
     return true;
+  }).sort((a, b) => {
+    const priceA = parseFloat(a.priceUSD.replace('$', ''));
+    const priceB = parseFloat(b.priceUSD.replace('$', ''));
+    
+    switch (sortBy) {
+      case 'price_low': return priceA - priceB;
+      case 'price_high': return priceB - priceA;
+      case 'level': return b.level - a.level;
+      case 'battle_power': return b.battlePower - a.battlePower;
+      default: return 0;
+    }
   });
 
   if (!isConnected) {
@@ -95,34 +129,176 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <Filter size={20} />
-        <button 
-          className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setFilter('all')}
-        >
-          All Items
-        </button>
-        <button 
-          className={`btn ${filter === 'rarity' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setFilter('rarity')}
-        >
-          High Rarity
-        </button>
-        <button 
-          className={`btn ${filter === 'trending' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setFilter('trending')}
-        >
-          <TrendingUp size={16} style={{ marginRight: '0.5rem' }} />
-          Trending
-        </button>
-        <button 
-          className={`btn ${filter === 'ending' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setFilter('ending')}
-        >
-          Ending Soon
-        </button>
+      {/* Enhanced Filters */}
+      <div className="marketplace-filters" style={{ 
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '16px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+        backdropFilter: 'blur(10px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <Filter size={20} color="#00d4ff" />
+          <h3 style={{ margin: 0, color: '#00d4ff' }}>Filters & Sorting</h3>
+        </div>
+        
+        {/* Quick Filters */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <button 
+            className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setFilter('all')}
+          >
+            All Items
+          </button>
+          <button 
+            className={`btn ${filter === 'rarity' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setFilter('rarity')}
+          >
+            High Rarity
+          </button>
+          <button 
+            className={`btn ${filter === 'trending' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setFilter('trending')}
+          >
+            <TrendingUp size={16} style={{ marginRight: '0.5rem' }} />
+            Trending
+          </button>
+          <button 
+            className={`btn ${filter === 'ending' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setFilter('ending')}
+          >
+            Ending Soon
+          </button>
+        </div>
+
+        {/* Advanced Filters */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          {/* Price Range */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#b0b0b0' }}>
+              Price Range (USD)
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="number"
+                value={priceRange[0]}
+                onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                style={{
+                  width: '80px',
+                  padding: '0.5rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.9rem'
+                }}
+              />
+              <span>-</span>
+              <input
+                type="number"
+                value={priceRange[1]}
+                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                style={{
+                  width: '80px',
+                  padding: '0.5rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.9rem'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Chain Filter */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#b0b0b0' }}>
+              Blockchain
+            </label>
+            <select
+              value={selectedChain}
+              onChange={(e) => setSelectedChain(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '0.9rem'
+              }}
+            >
+              <option value="all">All Chains</option>
+              <option value="ethereum">Ethereum</option>
+              <option value="polygon">Polygon</option>
+              <option value="bsc">BSC</option>
+              <option value="arbitrum">Arbitrum</option>
+            </select>
+          </div>
+
+          {/* Class Filter */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#b0b0b0' }}>
+              Character Class
+            </label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '0.9rem'
+              }}
+            >
+              <option value="all">All Classes</option>
+              <option value="warrior">⚔️ Warrior</option>
+              <option value="mage">🔮 Mage</option>
+              <option value="rogue">🗡️ Rogue</option>
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#b0b0b0' }}>
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '0.9rem'
+              }}
+            >
+              <option value="price_low">Price: Low to High</option>
+              <option value="price_high">Price: High to Low</option>
+              <option value="level">Level: High to Low</option>
+              <option value="battle_power">Battle Power</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Results Count */}
+        <div style={{ 
+          marginTop: '1rem', 
+          padding: '0.5rem 0', 
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          fontSize: '0.9rem',
+          color: '#b0b0b0'
+        }}>
+          Showing {filteredListings.length} of {listings.length} items
+        </div>
       </div>
 
       {/* Marketplace Grid */}
@@ -149,9 +325,49 @@ const Marketplace = () => {
             </div>
 
             <div className="character-avatar" style={{
-              background: `linear-gradient(135deg, ${getRarityColor(listing.rarity)}, ${getRarityColor(listing.rarity)}80)`
+              background: `linear-gradient(135deg, ${getRarityColor(listing.rarity)}, ${getRarityColor(listing.rarity)}80)`,
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              {getClassEmoji(listing.class)}
+              {listing.image ? (
+                <img 
+                  src={listing.image} 
+                  alt={listing.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '12px'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: listing.image ? 'none' : 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '3rem'
+              }}>
+                {getClassEmoji(listing.class)}
+              </div>
+              {/* Rarity glow effect */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `radial-gradient(circle at center, ${getRarityColor(listing.rarity)}20, transparent 70%)`,
+                animation: 'pulse 3s ease-in-out infinite'
+              }} />
             </div>
             
             <div className="character-name">{listing.name}</div>
@@ -235,9 +451,28 @@ const Marketplace = () => {
             </div>
 
             {/* Action Button */}
-            <button className="btn btn-primary" style={{ width: '100%' }}>
+            <button 
+              className="btn btn-primary" 
+              style={{ 
+                width: '100%',
+                background: 'linear-gradient(135deg, #00ff88, #00cc66)',
+                border: 'none',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onClick={() => buyNFT(listing.id)}
+            >
               <ShoppingCart size={16} style={{ marginRight: '0.5rem' }} />
               Buy Now
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                animation: 'shimmer 2s infinite'
+              }} />
             </button>
 
             {/* Seller Info */}
