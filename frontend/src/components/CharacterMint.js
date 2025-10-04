@@ -40,6 +40,13 @@ const CharacterMint = () => {
   });
 
   const { data, write, error: writeError, isLoading: isWriting } = useContractWrite(config);
+
+  // Fallback contract write without preparation (for testing)
+  const { write: writeWithoutPrep, error: directWriteError } = useContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: CHARACTER_ABI,
+    functionName: 'mintCharacter'
+  });
   
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransaction({
     hash: data?.hash,
@@ -105,38 +112,52 @@ const CharacterMint = () => {
 
   // Separate function to handle blockchain minting
   const handleMintToBlockchain = () => {
-    if (!ipfsData || !generatedCharacter || !write) {
-      console.error('Cannot mint: missing data or write function', {
+    if (!ipfsData || !generatedCharacter) {
+      console.error('Cannot mint: missing data', {
         ipfsData: !!ipfsData,
-        generatedCharacter: !!generatedCharacter,
-        write: !!write,
-        prepareError: prepareError?.message,
-        writeError: writeError?.message
+        generatedCharacter: !!generatedCharacter
       });
       return;
     }
 
     setMinting(true);
     
+    const mintArgs = [
+      address,
+      ipfsData.metadataIPFS,
+      selectedClass === 'warrior' ? 0 : selectedClass === 'mage' ? 1 : 2,
+      [
+        BigInt(generatedCharacter?.metadata?.stats?.strength || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.defense || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.speed || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.magic || 50)
+      ]
+    ];
+    
     console.log('🔗 Initiating blockchain transaction...', {
       contract: CONTRACT_ADDRESS,
       fee: '0.1 MATIC',
       metadata: ipfsData.metadataIPFS,
-      args: [
-        address,
-        ipfsData.metadataIPFS,
-        selectedClass === 'warrior' ? 0 : selectedClass === 'mage' ? 1 : 2,
-        [
-          BigInt(generatedCharacter?.metadata?.stats?.strength || 50),
-          BigInt(generatedCharacter?.metadata?.stats?.defense || 50),
-          BigInt(generatedCharacter?.metadata?.stats?.speed || 50),
-          BigInt(generatedCharacter?.metadata?.stats?.magic || 50)
-        ]
-      ]
+      args: mintArgs,
+      preparedWrite: !!write,
+      directWrite: !!writeWithoutPrep
     });
     
-    // This should trigger the wallet popup
-    write?.();
+    // Try prepared write first, fallback to direct write
+    if (write) {
+      console.log('Using prepared write function');
+      write?.();
+    } else if (writeWithoutPrep) {
+      console.log('Using direct write function (fallback)');
+      writeWithoutPrep?.({
+        args: mintArgs,
+        value: MINT_FEE
+      });
+    } else {
+      console.error('No write function available');
+      setMinting(false);
+      alert('Contract write function not available. Please check your network connection and try again.');
+    }
   };
 
   // Handle transaction states
@@ -441,10 +462,10 @@ const CharacterMint = () => {
                   <button
                     className="btn btn-primary"
                     onClick={handleMintToBlockchain}
-                    disabled={minting || isConfirming || !write}
+                    disabled={minting || isConfirming || (!write && !writeWithoutPrep)}
                     style={{
                       width: '100%',
-                      background: (minting || isConfirming || !write)
+                      background: (minting || isConfirming || (!write && !writeWithoutPrep))
                         ? 'linear-gradient(135deg, #666, #888)' 
                         : 'linear-gradient(135deg, #00ff88, #00cc66)',
                       fontSize: '1.1rem',
@@ -460,6 +481,7 @@ const CharacterMint = () => {
                       <>
                         <Download size={20} style={{ marginRight: '0.5rem' }} />
                         Step 2: Mint NFT Character (0.1 MATIC)
+                        {!write && writeWithoutPrep && <span style={{fontSize: '0.8rem', display: 'block'}}>Using fallback method</span>}
                       </>
                     )}
                   </button>
@@ -482,9 +504,12 @@ const CharacterMint = () => {
                     <p>Generated Character: {generatedCharacter ? '✅' : '❌'}</p>
                     <p>IPFS Data: {ipfsData ? '✅' : '❌'}</p>
                     <p>Config Ready: {config ? '✅' : '❌'}</p>
-                    <p>Write Function: {write ? '✅' : '❌'}</p>
+                    <p>Prepared Write: {write ? '✅' : '❌'}</p>
+                    <p>Direct Write: {writeWithoutPrep ? '✅' : '❌'}</p>
+                    <p>Can Mint: {(write || writeWithoutPrep) ? '✅' : '❌'}</p>
                     {prepareError && <p style={{color: '#ff6b35'}}>Prepare Error: {prepareError.message}</p>}
                     {writeError && <p style={{color: '#ff6b35'}}>Write Error: {writeError.message}</p>}
+                    {directWriteError && <p style={{color: '#ff6b35'}}>Direct Write Error: {directWriteError.message}</p>}
                   </div>
                 )}
               </div>

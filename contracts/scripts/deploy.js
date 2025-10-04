@@ -37,21 +37,29 @@ async function main() {
   // Mint some initial characters for testing
   console.log("\n🎮 Minting test characters...");
 
-  const characterClasses = ["warrior", "mage", "rogue"];
+  const characterClasses = [0, 1, 2]; // warrior, mage, rogue
+  const classNames = ["warrior", "mage", "rogue"];
   const testURIs = [
-    "https://chainquest-metadata.vercel.app/warrior/1.json",
-    "https://chainquest-metadata.vercel.app/mage/1.json",
-    "https://chainquest-metadata.vercel.app/rogue/1.json"
+    "https://ipfs.io/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
+    "https://ipfs.io/ipfs/QmNrEidQrAbxx3FzxNt9E6qjEDZrtvzxUVh47BXm6nYV8h",
+    "https://ipfs.io/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG"
   ];
 
+  // Get the minting fee
+  const mintingFee = await character.mintingFee();
+  console.log(`Minting fee: ${ethers.formatEther(mintingFee)} MATIC`);
+
   for (let i = 0; i < characterClasses.length; i++) {
+    const stats = [50, 50, 50, 50]; // Default stats for testing
     const tx = await character.mintCharacter(
       deployer.address,
+      testURIs[i],
       characterClasses[i],
-      testURIs[i]
+      stats,
+      { value: mintingFee }
     );
     await tx.wait();
-    console.log(`✅ Minted ${characterClasses[i]} character (Token ID: ${i})`);
+    console.log(`✅ Minted ${classNames[i]} character (Token ID: ${i})`);
   }
 
   // Save deployment addresses

@@ -9,6 +9,7 @@
     "deploy": "hardhat run scripts/deploy.js",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
     "deploy:mumbai": "hardhat run scripts/deploy.js --network mumbai",
+    "deploy:amoy": "hardhat run scripts/deploy.js --network amoy",
     "deploy:bsc-testnet": "hardhat run scripts/deploy.js --network bscTestnet",
     "verify": "hardhat verify"
   },
