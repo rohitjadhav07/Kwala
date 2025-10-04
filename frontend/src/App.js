@@ -2,6 +2,21 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WagmiConfig, createConfig, configureChains, mainnet } from 'wagmi';
 import { polygon, bsc, arbitrum, sepolia, polygonMumbai } from 'wagmi/chains';
+import { publicProvider } from 'wagmi/providers/public';
+import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { RainbowKitProvider, getDefaultWallets, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
+import '@rainbow-me/rainbowkit/styles.css';
+
+// Components
+import Header from './components/Header';
+import DevTools from './components/DevTools';
+import ErrorBoundary from './components/ErrorBoundary';
+import Dashboard from './pages/Dashboard';
+import Characters from './pages/Characters';
+import Quests from './pages/Quests';
+import Arena from './pages/Arena';
+import Marketplace from './pages/Marketplace';
+import './App.css';
 
 // Define Polygon Amoy testnet
 const polygonAmoy = {
@@ -22,21 +37,6 @@ const polygonAmoy = {
   },
   testnet: true,
 };
-import { publicProvider } from 'wagmi/providers/public';
-import { RainbowKitProvider, getDefaultWallets, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
-import '@rainbow-me/rainbowkit/styles.css';
-
-// Components
-import Header from './components/Header';
-import DevTools from './components/DevTools';
-
-import ErrorBoundary from './components/ErrorBoundary';
-import Dashboard from './pages/Dashboard';
-import Characters from './pages/Characters';
-import Quests from './pages/Quests';
-import Arena from './pages/Arena';
-import Marketplace from './pages/Marketplace';
-import './App.css';
 
 // Define localhost chain
 const localhost = {
@@ -54,16 +54,23 @@ const localhost = {
   },
 };
 
-// Configure chains and providers
+// Configure chains and providers with better RPC if available
+const providers = [publicProvider()];
+
+// Add Alchemy provider if API key is available
+if (process.env.REACT_APP_ALCHEMY_API_KEY) {
+  providers.unshift(alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_API_KEY }));
+}
+
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [localhost, polygonAmoy, mainnet, polygon, bsc, arbitrum, sepolia, polygonMumbai],
-  [publicProvider()]
+  providers
 );
 
 // Configure wallets
 const { wallets } = getDefaultWallets({
   appName: 'ChainQuest',
-  projectId: 'your-project-id', // Get from WalletConnect
+  projectId: process.env.REACT_APP_WALLETCONNECT_PROJECT_ID || 'demo-project-id',
   chains,
 });
 
