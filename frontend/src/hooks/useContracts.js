@@ -13,6 +13,10 @@ export function useChainQuestContracts() {
     
     if (chain?.id === 1337) {
       chainKey = 'localhost';
+    } else if (chain?.id === 80002) {
+      chainKey = 'amoy'; // Polygon Amoy testnet
+    } else if (chain?.id === 80001) {
+      chainKey = 'mumbai'; // Old Mumbai testnet
     } else if (chain?.name) {
       chainKey = chain.name.toLowerCase();
     }

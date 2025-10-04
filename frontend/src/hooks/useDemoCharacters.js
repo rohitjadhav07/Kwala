@@ -6,46 +6,11 @@ export function useDemoCharacters() {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Demo character data
-  const demoCharacters = [
-    {
-      id: '1',
-      name: 'Thorin Ironshield',
-      class: 'warrior',
-      level: 12,
-      evolutionStage: 3,
-      experience: 2340,
-      stats: {
-        strength: 45,
-        defense: 38,
-        speed: 22,
-        magic: 15
-      },
-      battlePower: 1440
-    },
-    {
-      id: '2', 
-      name: 'Luna Starweaver',
-      class: 'mage',
-      level: 8,
-      evolutionStage: 2,
-      experience: 890,
-      stats: {
-        strength: 18,
-        defense: 20,
-        speed: 28,
-        magic: 52
-      },
-      battlePower: 944
-    }
-  ];
-
   useEffect(() => {
     if (isConnected && address) {
-      setTimeout(() => {
-        setCharacters(demoCharacters);
-        setLoading(false);
-      }, 1000);
+      // No demo data - start with empty state
+      setCharacters([]);
+      setLoading(false);
     } else {
       setCharacters([]);
       setLoading(false);

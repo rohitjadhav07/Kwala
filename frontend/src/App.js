@@ -2,6 +2,26 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WagmiConfig, createConfig, configureChains, mainnet } from 'wagmi';
 import { polygon, bsc, arbitrum, sepolia, polygonMumbai } from 'wagmi/chains';
+
+// Define Polygon Amoy testnet
+const polygonAmoy = {
+  id: 80002,
+  name: 'Polygon Amoy',
+  network: 'polygon-amoy',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'MATIC',
+    symbol: 'MATIC',
+  },
+  rpcUrls: {
+    public: { http: ['https://rpc-amoy.polygon.technology'] },
+    default: { http: ['https://rpc-amoy.polygon.technology'] },
+  },
+  blockExplorers: {
+    default: { name: 'PolygonScan', url: 'https://amoy.polygonscan.com' },
+  },
+  testnet: true,
+};
 import { publicProvider } from 'wagmi/providers/public';
 import { RainbowKitProvider, getDefaultWallets, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -9,7 +29,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 // Components
 import Header from './components/Header';
 import DevTools from './components/DevTools';
-import DemoNotification from './components/DemoNotification';
+
 import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
 import Characters from './pages/Characters';
@@ -36,7 +56,7 @@ const localhost = {
 
 // Configure chains and providers
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [localhost, mainnet, polygon, bsc, arbitrum, sepolia, polygonMumbai],
+  [localhost, polygonAmoy, mainnet, polygon, bsc, arbitrum, sepolia, polygonMumbai],
   [publicProvider()]
 );
 
@@ -76,7 +96,7 @@ function App() {
                   <Route path="/marketplace" element={<Marketplace />} />
                 </Routes>
               </main>
-              <DemoNotification />
+
               <DevTools />
             </div>
           </Router>

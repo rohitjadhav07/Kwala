@@ -8,13 +8,7 @@ import { useDemoCharacters } from '../hooks/useDemoCharacters';
 const Characters = () => {
   const { address, isConnected } = useAccount();
   const { chain } = useNetwork();
-  const [demoMode, setDemoMode] = useState(true); // Start in demo mode
-  
-  // Always call both hooks to avoid conditional hook usage
-  const demoHook = useDemoCharacters();
-  const contractHook = useSimpleCharacters();
-  
-  // Select which hook data to use based on mode
+  // Use production characters hook only
   const { 
     characters, 
     loading, 
@@ -24,7 +18,7 @@ const Characters = () => {
     isMinting,
     isAddingExp,
     isEvolving
-  } = demoMode ? demoHook : contractHook;
+  } = useSimpleCharacters();
   
   const [selectedClass, setSelectedClass] = useState('warrior');
 
@@ -87,39 +81,10 @@ const Characters = () => {
   return (
     <div className="fade-in">
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div>
-            <h1>Your Characters</h1>
-            <p>Manage your NFT characters across multiple blockchains</p>
-          </div>
-          
-          {/* Demo Mode Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ color: demoMode ? '#00d4ff' : '#b0b0b0' }}>
-              {demoMode ? '🎮 Demo Mode' : '⛓️ Live Mode'}
-            </span>
-            <button
-              className={`btn ${demoMode ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setDemoMode(!demoMode)}
-              style={{ padding: '0.5rem 1rem' }}
-            >
-              {demoMode ? 'Switch to Live' : 'Switch to Demo'}
-            </button>
-          </div>
+        <div>
+          <h1>Your Characters</h1>
+          <p>Manage your NFT characters on Mumbai testnet with Kwala automation</p>
         </div>
-        
-        {demoMode && (
-          <div style={{ 
-            background: 'rgba(0, 212, 255, 0.1)', 
-            border: '1px solid rgba(0, 212, 255, 0.3)',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <strong>🎮 Demo Mode Active</strong><br />
-            You're in demo mode! All interactions are simulated. Switch to Live Mode to interact with real smart contracts.
-          </div>
-        )}
       </div>
 
       <div className="character-grid">
@@ -131,7 +96,7 @@ const Characters = () => {
             onEvolveCharacter={handleEvolveCharacter}
             isAddingExp={isAddingExp}
             isEvolving={isEvolving}
-            chainName={demoMode ? 'Demo' : chain?.name}
+            chainName={chain?.name}
           />
         ))}
 

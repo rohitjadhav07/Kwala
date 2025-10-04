@@ -8,16 +8,16 @@ triggers:
   # Monitor NFT transfers to detect character acquisitions
   - name: "character_acquired"
     type: "contract_event"
-    contract: "0x..." # ChainQuest Character NFT contract
+    contract: "0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D" # ChainQuest Character NFT contract on Amoy
     event: "Transfer"
-    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    chains: ["polygon-amoy"]
     
   # Monitor quest contract interactions
   - name: "quest_interaction"
     type: "contract_event" 
-    contract: "0x..." # Quest Manager contract
+    contract: "0x..." # Quest Manager contract (to be deployed)
     event: "QuestStarted"
-    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    chains: ["polygon-amoy"]
     
   # Time-based quest generation
   - name: "daily_quest_reset"

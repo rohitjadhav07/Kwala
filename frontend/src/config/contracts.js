@@ -17,9 +17,20 @@ export const CONTRACT_ADDRESSES = {
     TournamentManager: "0x..."
   },
   mumbai: {
-    ChainQuestCharacter: "0x...",
+    ChainQuestCharacter: "0x...", // Will be updated after Mumbai deployment
     QuestManager: "0x...",
     TournamentManager: "0x..."
+  },
+  // Polygon Amoy testnet (new official testnet)
+  amoy: {
+    ChainQuestCharacter: "0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D", // ✅ DEPLOYED!
+    QuestManager: "0x...", // Need more MATIC to deploy
+    TournamentManager: "0x..." // Need more MATIC to deploy
+  },
+  80002: {
+    ChainQuestCharacter: "0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D", // ✅ DEPLOYED!
+    QuestManager: "0x...", // Need more MATIC to deploy
+    TournamentManager: "0x..." // Need more MATIC to deploy
   }
 };
 

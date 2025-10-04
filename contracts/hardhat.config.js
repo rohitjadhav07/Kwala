@@ -22,9 +22,18 @@ module.exports = {
       chainId: 11155111
     },
     mumbai: {
-      url: process.env.MUMBAI_RPC_URL || "https://polygon-mumbai.infura.io/v3/YOUR_KEY", 
+      url: process.env.MUMBAI_RPC_URL || "https://rpc-mumbai.matic.today", 
       accounts: (process.env.PRIVATE_KEY && process.env.PRIVATE_KEY !== "your_private_key_here") ? [process.env.PRIVATE_KEY] : [],
-      chainId: 80001
+      chainId: 80001,
+      gasPrice: 20000000000, // 20 gwei
+      gas: 6000000
+    },
+    amoy: {
+      url: process.env.AMOY_RPC_URL || "https://rpc-amoy.polygon.technology", 
+      accounts: (process.env.PRIVATE_KEY && process.env.PRIVATE_KEY !== "your_private_key_here") ? [process.env.PRIVATE_KEY] : [],
+      chainId: 80002,
+      gasPrice: 30000000000, // 30 gwei (higher for Amoy)
+      gas: 8000000
     },
     bscTestnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
