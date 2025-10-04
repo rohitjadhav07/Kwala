@@ -96,40 +96,47 @@ const CharacterMint = () => {
       setUploadingToIPFS(false);
       console.log('✅ IPFS upload complete:', ipfsResult);
 
-      // Wait a moment for the config to update
-      setTimeout(() => {
-        // Step 2: Mint on blockchain
-        setMinting(true);
-        
-        // Check for preparation errors
-        if (prepareError) {
-          throw new Error(`Contract preparation failed: ${prepareError.message}`);
-        }
-        
-        if (writeError) {
-          throw new Error(`Contract write error: ${writeError.message}`);
-        }
-        
-        if (!write) {
-          throw new Error('Contract write function not available. Please check your wallet connection and network.');
-        }
-        
-        console.log('🔗 Initiating blockchain transaction...', {
-          contract: CONTRACT_ADDRESS,
-          fee: '0.1 MATIC',
-          metadata: ipfsResult.metadataIPFS
-        });
-        
-        // This should trigger the wallet popup
-        write?.();
-      }, 1000);
-
     } catch (error) {
-      console.error('❌ Minting failed:', error);
-      setMinting(false);
+      console.error('❌ IPFS upload failed:', error);
       setUploadingToIPFS(false);
-      alert(`Minting failed: ${error.message}`);
+      alert(`IPFS upload failed: ${error.message}`);
     }
+  };
+
+  // Separate function to handle blockchain minting
+  const handleMintToBlockchain = () => {
+    if (!ipfsData || !generatedCharacter || !write) {
+      console.error('Cannot mint: missing data or write function', {
+        ipfsData: !!ipfsData,
+        generatedCharacter: !!generatedCharacter,
+        write: !!write,
+        prepareError: prepareError?.message,
+        writeError: writeError?.message
+      });
+      return;
+    }
+
+    setMinting(true);
+    
+    console.log('🔗 Initiating blockchain transaction...', {
+      contract: CONTRACT_ADDRESS,
+      fee: '0.1 MATIC',
+      metadata: ipfsData.metadataIPFS,
+      args: [
+        address,
+        ipfsData.metadataIPFS,
+        selectedClass === 'warrior' ? 0 : selectedClass === 'mage' ? 1 : 2,
+        [
+          BigInt(generatedCharacter?.metadata?.stats?.strength || 50),
+          BigInt(generatedCharacter?.metadata?.stats?.defense || 50),
+          BigInt(generatedCharacter?.metadata?.stats?.speed || 50),
+          BigInt(generatedCharacter?.metadata?.stats?.magic || 50)
+        ]
+      ]
+    });
+    
+    // This should trigger the wallet popup
+    write?.();
   };
 
   // Handle transaction states
@@ -163,6 +170,17 @@ const CharacterMint = () => {
       console.error('⚠️ Prepare error:', prepareError);
     }
   }, [prepareError]);
+
+  // Log when config/write function becomes available
+  useEffect(() => {
+    if (config && write && ipfsData) {
+      console.log('✅ Contract write function ready!', {
+        config: !!config,
+        write: !!write,
+        ipfsData: !!ipfsData
+      });
+    }
+  }, [config, write, ipfsData]);
 
   if (!isConnected) {
     return (
@@ -393,36 +411,59 @@ const CharacterMint = () => {
                   </div>
                 </div>
 
-                <button
-                  className="btn btn-primary"
-                  onClick={mintCharacter}
-                  disabled={minting || uploadingToIPFS || isConfirming || !generatedCharacter}
-                  style={{
-                    width: '100%',
-                    background: (minting || uploadingToIPFS || isConfirming || !generatedCharacter)
-                      ? 'linear-gradient(135deg, #666, #888)' 
-                      : 'linear-gradient(135deg, #00ff88, #00cc66)',
-                    fontSize: '1.1rem',
-                    padding: '1rem'
-                  }}
-                >
-                  {uploadingToIPFS ? (
-                    <>
-                      <Upload size={20} className="spinner" style={{ marginRight: '0.5rem' }} />
-                      Uploading to IPFS...
-                    </>
-                  ) : minting || isConfirming ? (
-                    <>
-                      <RefreshCw size={20} className="spinner" style={{ marginRight: '0.5rem' }} />
-                      {isConfirming ? 'Confirming Transaction...' : 'Waiting for Wallet...'}
-                    </>
-                  ) : (
-                    <>
-                      <Download size={20} style={{ marginRight: '0.5rem' }} />
-                      Mint NFT Character (0.1 MATIC)
-                    </>
-                  )}
-                </button>
+                {!ipfsData ? (
+                  <button
+                    className="btn btn-primary"
+                    onClick={mintCharacter}
+                    disabled={uploadingToIPFS || !generatedCharacter}
+                    style={{
+                      width: '100%',
+                      background: (uploadingToIPFS || !generatedCharacter)
+                        ? 'linear-gradient(135deg, #666, #888)' 
+                        : 'linear-gradient(135deg, #00d4ff, #0099cc)',
+                      fontSize: '1.1rem',
+                      padding: '1rem'
+                    }}
+                  >
+                    {uploadingToIPFS ? (
+                      <>
+                        <Upload size={20} className="spinner" style={{ marginRight: '0.5rem' }} />
+                        Uploading to IPFS...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={20} style={{ marginRight: '0.5rem' }} />
+                        Step 1: Upload to IPFS
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleMintToBlockchain}
+                    disabled={minting || isConfirming || !write}
+                    style={{
+                      width: '100%',
+                      background: (minting || isConfirming || !write)
+                        ? 'linear-gradient(135deg, #666, #888)' 
+                        : 'linear-gradient(135deg, #00ff88, #00cc66)',
+                      fontSize: '1.1rem',
+                      padding: '1rem'
+                    }}
+                  >
+                    {minting || isConfirming ? (
+                      <>
+                        <RefreshCw size={20} className="spinner" style={{ marginRight: '0.5rem' }} />
+                        {isConfirming ? 'Confirming Transaction...' : 'Waiting for Wallet...'}
+                      </>
+                    ) : (
+                      <>
+                        <Download size={20} style={{ marginRight: '0.5rem' }} />
+                        Step 2: Mint NFT Character (0.1 MATIC)
+                      </>
+                    )}
+                  </button>
+                )}
 
                 {/* Debug Info */}
                 {process.env.NODE_ENV === 'development' && (
