@@ -1,0 +1,147 @@
+# ChainQuest - NFT Evolution Automation
+# This workflow handles automatic NFT character evolution and upgrades
+
+name: "NFT Evolution System"
+description: "Automatically evolves NFT characters based on achievements and time"
+
+triggers:
+  # Monitor experience gain events
+  - name: "experience_gained"
+    type: "contract_event"
+    contract: "0x..." # Character Stats contract
+    event: "ExperienceGained"
+    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    
+  # Monitor achievement unlocks
+  - name: "achievement_unlocked"
+    type: "contract_event"
+    contract: "0x..." # Achievement contract
+    event: "AchievementUnlocked" 
+    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    
+  # Time-based evolution checks
+  - name: "evolution_check"
+    type: "schedule"
+    cron: "0 */6 * * *" # Every 6 hours
+    
+  # Battle victory events
+  - name: "battle_victory"
+    type: "contract_event"
+    contract: "0x..." # Battle Arena contract
+    event: "BattleWon"
+    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+
+actions:
+  # Check if character is ready for evolution
+  - name: "check_evolution_eligibility"
+    type: "contract_call"
+    contract: "0x..." # Evolution Manager contract
+    function: "checkEvolutionEligibility"
+    conditions:
+      - trigger: "experience_gained"
+      - trigger: "achievement_unlocked"
+      - trigger: "battle_victory"
+    parameters:
+      - name: "tokenId"
+        value: "{{trigger.tokenId}}"
+      - name: "owner"
+        value: "{{trigger.owner}}"
+        
+  # Automatically evolve eligible characters
+  - name: "evolve_character"
+    type: "contract_call"
+    contract: "0x..." # Character NFT contract
+    function: "evolveCharacter"
+    conditions:
+      - action: "check_evolution_eligibility"
+      - action_result.eligible: true
+    parameters:
+      - name: "tokenId"
+        value: "{{trigger.tokenId}}"
+      - name: "newLevel"
+        value: "{{action_result.newLevel}}"
+      - name: "newAttributes"
+        value: "{{action_result.newAttributes}}"
+        
+  # Update metadata across all chains
+  - name: "update_cross_chain_metadata"
+    type: "cross_chain_call"
+    source_chain: "{{trigger.chain}}"
+    target_chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    contract: "0x..." # Metadata Sync contract
+    function: "updateMetadata"
+    conditions:
+      - action: "evolve_character"
+    parameters:
+      - name: "tokenId"
+        value: "{{trigger.tokenId}}"
+      - name: "newMetadata"
+        value: "{{action.newMetadata}}"
+        
+  # Grant evolution rewards
+  - name: "grant_evolution_rewards"
+    type: "contract_call"
+    contract: "0x..." # Reward Manager contract
+    function: "grantEvolutionRewards"
+    conditions:
+      - action: "evolve_character"
+    parameters:
+      - name: "player"
+        value: "{{trigger.owner}}"
+      - name: "tokenId"
+        value: "{{trigger.tokenId}}"
+      - name: "evolutionLevel"
+        value: "{{action.newLevel}}"
+        
+  # Time-based stat boosts
+  - name: "apply_time_bonus"
+    type: "contract_call"
+    contract: "0x..." # Character Stats contract
+    function: "applyTimeBonus"
+    conditions:
+      - trigger: "evolution_check"
+    parameters:
+      - name: "tokenId"
+        value: "{{nft.tokenId}}"
+      - name: "hoursActive"
+        value: "{{time.since_last_activity}}"
+
+# Special evolution events
+special_evolutions:
+  # Legendary evolution for rare achievements
+  - name: "legendary_evolution"
+    type: "contract_call"
+    contract: "0x..." # Legendary Evolution contract
+    function: "triggerLegendaryEvolution"
+    conditions:
+      - trigger: "achievement_unlocked"
+      - trigger.achievementType: "legendary"
+    parameters:
+      - name: "tokenId"
+        value: "{{trigger.tokenId}}"
+      - name: "legendaryType"
+        value: "{{trigger.achievementData}}"
+
+notifications:
+  - name: "evolution_completed"
+    type: "webhook"
+    url: "https://chainquest-api.vercel.app/webhooks/evolution"
+    conditions:
+      - action: "evolve_character"
+    payload:
+      tokenId: "{{trigger.tokenId}}"
+      owner: "{{trigger.owner}}"
+      oldLevel: "{{nft.previousLevel}}"
+      newLevel: "{{action.newLevel}}"
+      chain: "{{trigger.chain}}"
+      
+  - name: "legendary_evolution_alert"
+    type: "webhook"
+    url: "https://chainquest-api.vercel.app/webhooks/legendary-evolution"
+    conditions:
+      - action: "legendary_evolution"
+    payload:
+      tokenId: "{{trigger.tokenId}}"
+      owner: "{{trigger.owner}}"
+      legendaryType: "{{action.legendaryType}}"
+      rarity: "legendary"

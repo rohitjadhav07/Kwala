@@ -1,0 +1,28 @@
+{
+  "name": "chainquest",
+  "version": "1.0.0",
+  "description": "Cross-Chain Gaming NFT Ecosystem powered by Kwala automation",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm start",
+    "install-all": "npm install && cd frontend && npm install && cd ../contracts && npm install",
+    "deploy-contracts": "cd contracts && npm run deploy",
+    "deploy:localhost": "cd contracts && npm run deploy -- --network localhost",
+    "deploy:sepolia": "cd contracts && npm run deploy:sepolia",
+    "deploy:mumbai": "cd contracts && npm run deploy:mumbai",
+    "deploy:bsc-testnet": "cd contracts && npm run deploy:bsc-testnet",
+    "test": "cd contracts && npm test",
+    "lint": "cd frontend && npm run lint",
+    "clean": "rm -rf node_modules frontend/node_modules contracts/node_modules frontend/build contracts/artifacts contracts/cache",
+    "postinstall": "npm run install-all"
+  },
+  "keywords": ["kwala", "web3", "gaming", "nft", "cross-chain", "automation"],
+  "author": "ChainQuest Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[your-username]/chainquest"
+  }
+}
