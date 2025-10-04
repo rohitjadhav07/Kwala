@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useAccount, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
+import { useAccount, useContractWrite, usePrepareContractWrite, useWaitForTransaction, useNetwork } from 'wagmi';
 import aiImageService from '../services/aiImageService';
-import { Wand2, Sparkles, Download, RefreshCw, Palette, Zap, Upload } from 'lucide-react';
+import { Wand2, Sparkles, Download, RefreshCw, Palette, Zap, Upload, AlertCircle } from 'lucide-react';
 import AICharacterGenerator from './AICharacterGenerator';
 
 const CharacterMint = () => {
   const { address, isConnected } = useAccount();
+  const { chain } = useNetwork();
   const [selectedClass, setSelectedClass] = useState('warrior');
   const [generatedCharacter, setGeneratedCharacter] = useState(null);
   const [minting, setMinting] = useState(false);
@@ -13,9 +14,12 @@ const CharacterMint = () => {
   const [uploadingToIPFS, setUploadingToIPFS] = useState(false);
   const [ipfsData, setIpfsData] = useState(null);
 
-  // Contract configuration for minting
-  const { config } = usePrepareContractWrite({
-    address: '0x5FbDB2315678afecb367f032d93F642f64180aa3', // Your deployed contract address
+  // Contract configuration for minting (Polygon/MATIC)
+  const CONTRACT_ADDRESS = process.env.REACT_APP_CHARACTER_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+  const MINT_FEE = '10000000000000000000'; // 10 MATIC (more reasonable for hackathon)
+
+  const { config, error: prepareError } = usePrepareContractWrite({
+    address: CONTRACT_ADDRESS,
     abi: [
       {
         name: 'mintCharacter',
@@ -31,22 +35,22 @@ const CharacterMint = () => {
       }
     ],
     functionName: 'mintCharacter',
-    args: ipfsData ? [
+    args: ipfsData && generatedCharacter ? [
       address,
       ipfsData.metadataIPFS,
       selectedClass === 'warrior' ? 0 : selectedClass === 'mage' ? 1 : 2,
       [
-        generatedCharacter?.metadata?.stats?.strength || 50,
-        generatedCharacter?.metadata?.stats?.defense || 50,
-        generatedCharacter?.metadata?.stats?.speed || 50,
-        generatedCharacter?.metadata?.stats?.magic || 50
+        BigInt(generatedCharacter?.metadata?.stats?.strength || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.defense || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.speed || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.magic || 50)
       ]
     ] : undefined,
     enabled: Boolean(ipfsData && generatedCharacter && address),
-    value: '10000000000000000' // 0.01 ETH minting fee
+    value: MINT_FEE
   });
 
-  const { data, write } = useContractWrite(config);
+  const { data, write, error: writeError, isLoading: isWriting } = useContractWrite(config);
   
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransaction({
     hash: data?.hash,
@@ -101,11 +105,26 @@ const CharacterMint = () => {
       // Step 2: Mint on blockchain
       setMinting(true);
       
-      if (write) {
-        write();
-      } else {
-        throw new Error('Contract write function not available');
+      // Check for preparation errors
+      if (prepareError) {
+        throw new Error(`Contract preparation failed: ${prepareError.message}`);
       }
+      
+      if (writeError) {
+        throw new Error(`Contract write error: ${writeError.message}`);
+      }
+      
+      if (!write) {
+        throw new Error('Contract write function not available. Please check your wallet connection and network.');
+      }
+      
+      console.log('🔗 Minting character to blockchain...', {
+        contract: CONTRACT_ADDRESS,
+        fee: `${parseInt(MINT_FEE) / 1e18} MATIC`,
+        metadata: ipfsData.metadataIPFS
+      });
+      
+      write();
 
     } catch (error) {
       console.error('Minting failed:', error);
@@ -135,6 +154,25 @@ const CharacterMint = () => {
       <div className="dashboard-card" style={{ textAlign: 'center', margin: '2rem 0' }}>
         <h2>Connect Your Wallet</h2>
         <p>Connect your wallet to mint AI-generated NFT characters.</p>
+      </div>
+    );
+  }
+
+  // Check if on correct network (Polygon)
+  const isCorrectNetwork = chain?.id === 137 || chain?.id === 80001 || chain?.id === 80002; // Polygon Mainnet, Mumbai, or Amoy
+  
+  if (!isCorrectNetwork) {
+    return (
+      <div className="dashboard-card" style={{ textAlign: 'center', margin: '2rem 0' }}>
+        <AlertCircle size={48} color="#ff6b35" style={{ marginBottom: '1rem' }} />
+        <h2>Wrong Network</h2>
+        <p style={{ marginBottom: '1rem' }}>
+          Please switch to Polygon network to mint characters.
+        </p>
+        <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+          Current network: {chain?.name || 'Unknown'}<br />
+          Required: Polygon (MATIC)
+        </p>
       </div>
     );
   }
@@ -331,10 +369,12 @@ const CharacterMint = () => {
                 <div style={{ marginBottom: '2rem' }}>
                   <h4 style={{ marginBottom: '0.5rem', color: '#00ff88' }}>Minting Details:</h4>
                   <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-                    <p>• Image and metadata will be stored on IPFS</p>
-                    <p>• NFT will be minted on Polygon network</p>
-                    <p>• Estimated gas fee: ~$0.01</p>
-                    <p>• Your character will be tradeable immediately</p>
+                    <p>• Image and metadata stored permanently on IPFS</p>
+                    <p>• NFT minted on Polygon network (fast & cheap)</p>
+                    <p>• Minting fee: 10 MATIC (~$5-8)</p>
+                    <p>• Gas fee: ~0.01 MATIC (~$0.01)</p>
+                    <p>• Character tradeable immediately after mint</p>
+                    <p>• Usable in all ChainQuest games</p>
                   </div>
                 </div>
 
@@ -364,7 +404,7 @@ const CharacterMint = () => {
                   ) : (
                     <>
                       <Download size={20} style={{ marginRight: '0.5rem' }} />
-                      Mint NFT Character (0.01 ETH)
+                      Mint NFT Character (10 MATIC)
                     </>
                   )}
                 </button>

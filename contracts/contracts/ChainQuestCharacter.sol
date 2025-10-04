@@ -40,11 +40,15 @@ contract ChainQuestCharacter is ERC721, ERC721URIStorage, Ownable {
     // Authorized contracts that can modify stats
     mapping(address => bool) public authorizedContracts;
     
+    // Minting fee (10 MATIC for hackathon)
+    uint256 public mintingFee = 10 ether;
+    
     // Events
     event CharacterMinted(address indexed owner, uint256 indexed tokenId, string characterClass);
     event CharacterEvolved(uint256 indexed tokenId, uint256 newStage, uint256 newLevel);
     event ExperienceGained(uint256 indexed tokenId, uint256 experience, uint256 newTotal);
     event StatsUpdated(uint256 indexed tokenId, uint256 strength, uint256 defense, uint256 speed, uint256 magic);
+    event MintingFeeUpdated(uint256 newFee);
     
     constructor() ERC721("ChainQuest Character", "CQC") {
         // Set evolution requirements
@@ -55,27 +59,64 @@ contract ChainQuestCharacter is ERC721, ERC721URIStorage, Ownable {
     }
     
     /**
-     * @dev Mint a new character NFT
+     * @dev Mint a new character NFT (owner only, for admin)
      */
     function mintCharacter(
         address to,
         string memory characterClass,
         string memory tokenURI
     ) public onlyOwner returns (uint256) {
+        return _mintCharacter(to, characterClass, tokenURI, 0, 0, 0, 0);
+    }
+    
+    /**
+     * @dev Public mint function with payment and custom stats
+     */
+    function mintCharacter(
+        address to,
+        string memory tokenURI,
+        uint8 characterClass,
+        uint256[4] memory stats
+    ) public payable returns (uint256) {
+        require(msg.value >= mintingFee, "Insufficient payment");
+        require(characterClass <= 2, "Invalid character class");
+        
+        string memory className = _getClassName(characterClass);
+        return _mintCharacter(to, className, tokenURI, stats[0], stats[1], stats[2], stats[3]);
+    }
+    
+    /**
+     * @dev Internal mint function
+     */
+    function _mintCharacter(
+        address to,
+        string memory characterClass,
+        string memory tokenURI,
+        uint256 strength,
+        uint256 defense,
+        uint256 speed,
+        uint256 magic
+    ) internal returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);
         
+        // Use provided stats or default base stats
+        uint256 finalStrength = strength > 0 ? strength : _getBaseStats(characterClass, "strength");
+        uint256 finalDefense = defense > 0 ? defense : _getBaseStats(characterClass, "defense");
+        uint256 finalSpeed = speed > 0 ? speed : _getBaseStats(characterClass, "speed");
+        uint256 finalMagic = magic > 0 ? magic : _getBaseStats(characterClass, "magic");
+        
         // Initialize character stats
         characterStats[tokenId] = CharacterStats({
             level: 1,
             experience: 0,
-            strength: _getBaseStats(characterClass, "strength"),
-            defense: _getBaseStats(characterClass, "defense"), 
-            speed: _getBaseStats(characterClass, "speed"),
-            magic: _getBaseStats(characterClass, "magic"),
+            strength: finalStrength,
+            defense: finalDefense,
+            speed: finalSpeed,
+            magic: finalMagic,
             characterClass: characterClass,
             evolutionStage: 1,
             lastActivityTime: block.timestamp
@@ -85,6 +126,16 @@ contract ChainQuestCharacter is ERC721, ERC721URIStorage, Ownable {
         
         emit CharacterMinted(to, tokenId, characterClass);
         return tokenId;
+    }
+    
+    /**
+     * @dev Get class name from index
+     */
+    function _getClassName(uint8 classIndex) internal pure returns (string memory) {
+        if (classIndex == 0) return "warrior";
+        if (classIndex == 1) return "mage";
+        if (classIndex == 2) return "rogue";
+        return "warrior";
     }
     
     /**
@@ -169,6 +220,61 @@ contract ChainQuestCharacter is ERC721, ERC721URIStorage, Ownable {
      */
     function authorizeContract(address contractAddress, bool authorized) external onlyOwner {
         authorizedContracts[contractAddress] = authorized;
+    }
+    
+    /**
+     * @dev Update minting fee (owner only)
+     */
+    function setMintingFee(uint256 newFee) external onlyOwner {
+        mintingFee = newFee;
+        emit MintingFeeUpdated(newFee);
+    }
+    
+    /**
+     * @dev Withdraw contract balance (owner only)
+     */
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to withdraw");
+        
+        (bool success, ) = payable(owner()).call{value: balance}("");
+        require(success, "Withdrawal failed");
+    }
+    
+    /**
+     * @dev Get tokens owned by address (for frontend)
+     */
+    function tokensOfOwner(address owner) external view returns (uint256[] memory) {
+        return ownerCharacters[owner];
+    }
+    
+    /**
+     * @dev Get character stats and metadata
+     */
+    function getCharacterStats(uint256 tokenId) external view returns (
+        uint8 class,
+        uint256 level,
+        uint256 experience,
+        uint256[4] memory stats
+    ) {
+        require(_exists(tokenId), "Character does not exist");
+        
+        CharacterStats memory character = characterStats[tokenId];
+        
+        // Convert class string to index
+        uint8 classIndex = 0;
+        if (keccak256(abi.encodePacked(character.characterClass)) == keccak256("mage")) {
+            classIndex = 1;
+        } else if (keccak256(abi.encodePacked(character.characterClass)) == keccak256("rogue")) {
+            classIndex = 2;
+        }
+        
+        return (
+            classIndex,
+            character.level,
+            character.experience,
+            [character.strength, character.defense, character.speed, character.magic]
+        );
     }
     
     // Internal functions
