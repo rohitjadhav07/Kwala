@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAccount, useContractWrite, usePrepareContractWrite, useWaitForTransaction, useNetwork } from 'wagmi';
+import { parseEther } from 'viem';
 import aiImageService from '../services/aiImageService';
+import { CONTRACT_ADDRESSES, CHARACTER_ABI } from '../config/contracts';
 import { Wand2, Sparkles, Download, RefreshCw, Palette, Zap, Upload, AlertCircle } from 'lucide-react';
 import AICharacterGenerator from './AICharacterGenerator';
 
@@ -15,38 +17,25 @@ const CharacterMint = () => {
   const [ipfsData, setIpfsData] = useState(null);
 
   // Contract configuration for minting (Polygon/MATIC)
-  const CONTRACT_ADDRESS = process.env.REACT_APP_CHARACTER_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-  const MINT_FEE = '100000000000000000'; // 0.1 MATIC (more reasonable for hackathon)
+  const CONTRACT_ADDRESS = CONTRACT_ADDRESSES.CHARACTER;
+  const MINT_FEE = parseEther('0.1'); // 0.1 MATIC
 
   const { config, error: prepareError } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
-    abi: [
-      {
-        name: 'mintCharacter',
-        type: 'function',
-        stateMutability: 'payable',
-        inputs: [
-          { name: 'to', type: 'address' },
-          { name: 'tokenURI', type: 'string' },
-          { name: 'characterClass', type: 'uint8' },
-          { name: 'stats', type: 'uint256[4]' }
-        ],
-        outputs: [{ name: 'tokenId', type: 'uint256' }]
-      }
-    ],
+    abi: CHARACTER_ABI,
     functionName: 'mintCharacter',
     args: ipfsData && generatedCharacter ? [
       address,
       ipfsData.metadataIPFS,
       selectedClass === 'warrior' ? 0 : selectedClass === 'mage' ? 1 : 2,
       [
-        generatedCharacter?.metadata?.stats?.strength || 50,
-        generatedCharacter?.metadata?.stats?.defense || 50,
-        generatedCharacter?.metadata?.stats?.speed || 50,
-        generatedCharacter?.metadata?.stats?.magic || 50
+        BigInt(generatedCharacter?.metadata?.stats?.strength || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.defense || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.speed || 50),
+        BigInt(generatedCharacter?.metadata?.stats?.magic || 50)
       ]
     ] : undefined,
-    enabled: Boolean(ipfsData && generatedCharacter && address),
+    enabled: Boolean(ipfsData && generatedCharacter && address && isConnected),
     value: MINT_FEE
   });
 
@@ -67,7 +56,10 @@ const CharacterMint = () => {
   };
 
   const mintCharacter = async () => {
-    if (!generatedCharacter || !isConnected || !address) return;
+    if (!generatedCharacter || !isConnected || !address) {
+      console.error('Missing requirements:', { generatedCharacter: !!generatedCharacter, isConnected, address });
+      return;
+    }
 
     try {
       // Step 1: Upload to IPFS
@@ -94,6 +86,7 @@ const CharacterMint = () => {
         }
       }
 
+      console.log('📤 Uploading to IPFS...');
       const ipfsResult = await aiImageService.uploadToIPFS(
         imageBlob,
         metadata
@@ -101,43 +94,48 @@ const CharacterMint = () => {
       
       setIpfsData(ipfsResult);
       setUploadingToIPFS(false);
+      console.log('✅ IPFS upload complete:', ipfsResult);
 
-      // Step 2: Mint on blockchain
-      setMinting(true);
-      
-      // Check for preparation errors
-      if (prepareError) {
-        throw new Error(`Contract preparation failed: ${prepareError.message}`);
-      }
-      
-      if (writeError) {
-        throw new Error(`Contract write error: ${writeError.message}`);
-      }
-      
-      if (!write) {
-        throw new Error('Contract write function not available. Please check your wallet connection and network.');
-      }
-      
-      // console.log('🔗 Minting character to blockchain...', {
-      //   contract: CONTRACT_ADDRESS,
-      //   fee: `${parseInt(MINT_FEE) / 1e18} MATIC`,
-      //   metadata: ipfsData.metadataIPFS
-      // });
-      
-      write();
+      // Wait a moment for the config to update
+      setTimeout(() => {
+        // Step 2: Mint on blockchain
+        setMinting(true);
+        
+        // Check for preparation errors
+        if (prepareError) {
+          throw new Error(`Contract preparation failed: ${prepareError.message}`);
+        }
+        
+        if (writeError) {
+          throw new Error(`Contract write error: ${writeError.message}`);
+        }
+        
+        if (!write) {
+          throw new Error('Contract write function not available. Please check your wallet connection and network.');
+        }
+        
+        console.log('🔗 Initiating blockchain transaction...', {
+          contract: CONTRACT_ADDRESS,
+          fee: '0.1 MATIC',
+          metadata: ipfsResult.metadataIPFS
+        });
+        
+        // This should trigger the wallet popup
+        write?.();
+      }, 1000);
 
     } catch (error) {
-      console.error('Minting failed:', error);
+      console.error('❌ Minting failed:', error);
       setMinting(false);
       setUploadingToIPFS(false);
-      // Show error in UI instead of alert
-      console.error('Minting failed:', error.message);
+      alert(`Minting failed: ${error.message}`);
     }
   };
 
-  // Handle successful minting
+  // Handle transaction states
   useEffect(() => {
     if (isConfirmed) {
+      console.log('🎉 Transaction confirmed!');
       setMintSuccess(true);
       setMinting(false);
       
@@ -149,6 +147,22 @@ const CharacterMint = () => {
       }, 5000);
     }
   }, [isConfirmed]);
+
+  // Handle write errors
+  useEffect(() => {
+    if (writeError) {
+      console.error('❌ Write error:', writeError);
+      setMinting(false);
+      alert(`Transaction failed: ${writeError.message}`);
+    }
+  }, [writeError]);
+
+  // Log preparation errors
+  useEffect(() => {
+    if (prepareError) {
+      console.error('⚠️ Prepare error:', prepareError);
+    }
+  }, [prepareError]);
 
   if (!isConnected) {
     return (
@@ -382,10 +396,10 @@ const CharacterMint = () => {
                 <button
                   className="btn btn-primary"
                   onClick={mintCharacter}
-                  disabled={minting || uploadingToIPFS || isConfirming}
+                  disabled={minting || uploadingToIPFS || isConfirming || !generatedCharacter}
                   style={{
                     width: '100%',
-                    background: (minting || uploadingToIPFS || isConfirming)
+                    background: (minting || uploadingToIPFS || isConfirming || !generatedCharacter)
                       ? 'linear-gradient(135deg, #666, #888)' 
                       : 'linear-gradient(135deg, #00ff88, #00cc66)',
                     fontSize: '1.1rem',
@@ -400,7 +414,7 @@ const CharacterMint = () => {
                   ) : minting || isConfirming ? (
                     <>
                       <RefreshCw size={20} className="spinner" style={{ marginRight: '0.5rem' }} />
-                      Minting to Blockchain...
+                      {isConfirming ? 'Confirming Transaction...' : 'Waiting for Wallet...'}
                     </>
                   ) : (
                     <>
@@ -409,6 +423,29 @@ const CharacterMint = () => {
                     </>
                   )}
                 </button>
+
+                {/* Debug Info */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div style={{ 
+                    marginTop: '1rem', 
+                    padding: '1rem', 
+                    background: 'rgba(255, 255, 255, 0.05)', 
+                    borderRadius: '8px',
+                    fontSize: '0.8rem'
+                  }}>
+                    <h4>Debug Info:</h4>
+                    <p>Connected: {isConnected ? '✅' : '❌'}</p>
+                    <p>Address: {address || 'None'}</p>
+                    <p>Network: {chain?.name || 'Unknown'} ({chain?.id})</p>
+                    <p>Contract: {CONTRACT_ADDRESS}</p>
+                    <p>Generated Character: {generatedCharacter ? '✅' : '❌'}</p>
+                    <p>IPFS Data: {ipfsData ? '✅' : '❌'}</p>
+                    <p>Config Ready: {config ? '✅' : '❌'}</p>
+                    <p>Write Function: {write ? '✅' : '❌'}</p>
+                    {prepareError && <p style={{color: '#ff6b35'}}>Prepare Error: {prepareError.message}</p>}
+                    {writeError && <p style={{color: '#ff6b35'}}>Write Error: {writeError.message}</p>}
+                  </div>
+                )}
               </div>
             </div>
           </div>
