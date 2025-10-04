@@ -40,10 +40,10 @@ const CharacterMint = () => {
       ipfsData.metadataIPFS,
       selectedClass === 'warrior' ? 0 : selectedClass === 'mage' ? 1 : 2,
       [
-        BigInt(generatedCharacter?.metadata?.stats?.strength || 50),
-        BigInt(generatedCharacter?.metadata?.stats?.defense || 50),
-        BigInt(generatedCharacter?.metadata?.stats?.speed || 50),
-        BigInt(generatedCharacter?.metadata?.stats?.magic || 50)
+        generatedCharacter?.metadata?.stats?.strength || 50,
+        generatedCharacter?.metadata?.stats?.defense || 50,
+        generatedCharacter?.metadata?.stats?.speed || 50,
+        generatedCharacter?.metadata?.stats?.magic || 50
       ]
     ] : undefined,
     enabled: Boolean(ipfsData && generatedCharacter && address),
@@ -118,11 +118,11 @@ const CharacterMint = () => {
         throw new Error('Contract write function not available. Please check your wallet connection and network.');
       }
       
-      console.log('🔗 Minting character to blockchain...', {
-        contract: CONTRACT_ADDRESS,
-        fee: `${parseInt(MINT_FEE) / 1e18} MATIC`,
-        metadata: ipfsData.metadataIPFS
-      });
+      // console.log('🔗 Minting character to blockchain...', {
+      //   contract: CONTRACT_ADDRESS,
+      //   fee: `${parseInt(MINT_FEE) / 1e18} MATIC`,
+      //   metadata: ipfsData.metadataIPFS
+      // });
       
       write();
 
@@ -130,7 +130,8 @@ const CharacterMint = () => {
       console.error('Minting failed:', error);
       setMinting(false);
       setUploadingToIPFS(false);
-      alert(`Minting failed: ${error.message}`);
+      // Show error in UI instead of alert
+      console.error('Minting failed:', error.message);
     }
   };
 

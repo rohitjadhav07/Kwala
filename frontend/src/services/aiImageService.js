@@ -21,18 +21,18 @@ class AIImageService {
     try {
       // Try Stability AI first (preferred for gaming art)
       if (this.stabilityApiKey && this.stabilityApiKey !== 'your_stability_ai_api_key_here') {
-        console.log('🎨 Generating with Stability AI...');
+        // console.log('🎨 Generating with Stability AI...');
         return await this.generateWithStabilityAI(enhancedPrompt, selectedClass);
       }
       
       // Try OpenAI DALL-E as fallback
       if (this.openaiApiKey && this.openaiApiKey !== 'your_openai_api_key_here') {
-        console.log('🤖 Generating with OpenAI DALL-E...');
+        // console.log('🤖 Generating with OpenAI DALL-E...');
         return await this.generateWithOpenAI(enhancedPrompt, selectedClass);
       }
       
       // Fallback to demo if no API keys
-      console.log('💡 No API keys found, using demo generation...');
+      // console.log('💡 No API keys found, using demo generation...');
       return await this.generateDemoImage(enhancedPrompt, selectedClass);
       
     } catch (error) {
@@ -40,7 +40,7 @@ class AIImageService {
       
       // Try the other API if one fails
       if (error.message.includes('Stability AI') && this.openaiApiKey && this.openaiApiKey !== 'your_openai_api_key_here') {
-        console.log('🔄 Stability AI failed, trying OpenAI...');
+        // console.log('🔄 Stability AI failed, trying OpenAI...');
         try {
           return await this.generateWithOpenAI(enhancedPrompt, selectedClass);
         } catch (openaiError) {
@@ -49,7 +49,7 @@ class AIImageService {
       }
       
       // Always fallback to demo on error
-      console.log('🎭 Falling back to demo generation...');
+      // console.log('🎭 Falling back to demo generation...');
       return await this.generateDemoImage(enhancedPrompt, selectedClass);
     }
   }
@@ -123,12 +123,12 @@ class AIImageService {
       style_preset: "fantasy-art" // Perfect for gaming characters
     };
 
-    console.log('🎨 Stability AI Request:', {
-      prompt: prompt.substring(0, 100) + '...',
-      cfg_scale: requestBody.cfg_scale,
-      steps: requestBody.steps,
-      style_preset: requestBody.style_preset
-    });
+    // console.log('🎨 Stability AI Request:', {
+    //   prompt: prompt.substring(0, 100) + '...',
+    //   cfg_scale: requestBody.cfg_scale,
+    //   steps: requestBody.steps,
+    //   style_preset: requestBody.style_preset
+    // });
 
     const response = await fetch(this.stabilityURL, {
       method: 'POST',
@@ -164,7 +164,7 @@ class AIImageService {
     const imageBlob = this.base64ToBlob(imageBase64, 'image/png');
     const imageUrl = URL.createObjectURL(imageBlob);
     
-    console.log('✅ Stability AI generation successful');
+    // console.log('✅ Stability AI generation successful');
     
     return {
       imageUrl: imageUrl,
@@ -415,7 +415,7 @@ class AIImageService {
       }
       
       // Fallback to demo upload
-      console.log('No Pinata credentials, using demo IPFS...');
+      // console.log('No Pinata credentials, using demo IPFS...');
       return await this.simulateIPFSUpload(metadata);
       
     } catch (error) {
@@ -427,7 +427,7 @@ class AIImageService {
 
   // Real Pinata IPFS upload
   async uploadToPinata(imageBlob, metadata) {
-    console.log('Uploading to Pinata IPFS...');
+    // console.log('Uploading to Pinata IPFS...');
     
     // Upload image first
     const imageFormData = new FormData();
@@ -501,7 +501,7 @@ class AIImageService {
 
   // Simulate IPFS upload for demo
   async simulateIPFSUpload(metadata) {
-    console.log('Simulating IPFS upload...');
+    // console.log('Simulating IPFS upload...');
     
     // Simulate upload delay
     await new Promise(resolve => setTimeout(resolve, 2000));

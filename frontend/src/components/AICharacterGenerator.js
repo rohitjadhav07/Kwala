@@ -64,7 +64,8 @@ const AICharacterGenerator = ({ onGenerate, selectedClass }) => {
       
     } catch (error) {
       console.error('AI generation failed:', error);
-      alert('AI generation failed. Please try again.');
+      // Show error in UI instead of alert
+      console.error('AI generation failed. Please try again.');
     } finally {
       setGenerating(false);
     }
