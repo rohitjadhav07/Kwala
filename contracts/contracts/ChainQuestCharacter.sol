@@ -40,8 +40,8 @@ contract ChainQuestCharacter is ERC721, ERC721URIStorage, Ownable {
     // Authorized contracts that can modify stats
     mapping(address => bool) public authorizedContracts;
     
-    // Minting fee (10 MATIC for hackathon)
-    uint256 public mintingFee = 10 ether;
+    // Minting fee (0.1 MATIC for hackathon)
+    uint256 public mintingFee = 0.1 ether;
     
     // Events
     event CharacterMinted(address indexed owner, uint256 indexed tokenId, string characterClass);

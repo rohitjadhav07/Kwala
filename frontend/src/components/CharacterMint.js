@@ -16,7 +16,7 @@ const CharacterMint = () => {
 
   // Contract configuration for minting (Polygon/MATIC)
   const CONTRACT_ADDRESS = process.env.REACT_APP_CHARACTER_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-  const MINT_FEE = '10000000000000000000'; // 10 MATIC (more reasonable for hackathon)
+  const MINT_FEE = '100000000000000000'; // 0.1 MATIC (more reasonable for hackathon)
 
   const { config, error: prepareError } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
@@ -372,7 +372,7 @@ const CharacterMint = () => {
                   <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
                     <p>• Image and metadata stored permanently on IPFS</p>
                     <p>• NFT minted on Polygon network (fast & cheap)</p>
-                    <p>• Minting fee: 10 MATIC (~$5-8)</p>
+                    <p>• Minting fee: 0.1 MATIC (~$0.05-0.08)</p>
                     <p>• Gas fee: ~0.01 MATIC (~$0.01)</p>
                     <p>• Character tradeable immediately after mint</p>
                     <p>• Usable in all ChainQuest games</p>
@@ -405,7 +405,7 @@ const CharacterMint = () => {
                   ) : (
                     <>
                       <Download size={20} style={{ marginRight: '0.5rem' }} />
-                      Mint NFT Character (10 MATIC)
+                      Mint NFT Character (0.1 MATIC)
                     </>
                   )}
                 </button>
