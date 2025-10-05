@@ -1,5 +1,7 @@
-Name: ChainQuest Character Evolution
+Name: ChainQuest_Character_Evolution
 Trigger:
+  ExecuteAfter: event
+  RepeatEvery: event
 TriggerSourceContract: 0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D
 TriggerChainID: 80002
 TriggerEventName: Transfer(address,address,uint256)
@@ -12,8 +14,6 @@ RecurringEventName: NA
 RecurringEventFilter: NA
 RecurringSourceContractABI: NA
 RecurringPrice: NA
-RepeatEvery: event
-ExecuteAfter: event
 ExpiresIn: 1781796603
 Meta: NA
 ActionStatusNotificationPOSTURL: https://chainquest-backend.vercel.app/webhooks/evolution
