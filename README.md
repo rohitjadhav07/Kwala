@@ -1,231 +1,188 @@
-# 🎮 ChainQuest - Cross-Chain Gaming NFT Ecosystem
-
-<div align="center">
+# 🎮 ChainQuest - Cross-Chain Gaming Platform
 
 ![ChainQuest Logo](https://img.shields.io/badge/ChainQuest-Cross--Chain%20Gaming-blue?style=for-the-badge&logo=gamepad)
 
-**🏆 Kwala Hacker House 2025 Submission**
+**🎮 Cross-Chain Gaming Platform**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-success?style=for-the-badge)](https://chainquest-demo.vercel.app)
-[![Kwala Workspace](https://img.shields.io/badge/Kwala-Workspace-orange?style=for-the-badge)](https://kwala.com/workspace/chainquest)
 [![Demo Video](https://img.shields.io/badge/Demo-Video-red?style=for-the-badge&logo=youtube)](https://youtube.com/watch?v=demo)
 
-</div>
+---
 
 ## 🌟 Project Overview
 
-ChainQuest is a revolutionary cross-chain RPG that leverages **Kwala's automation protocol** to create seamless gaming experiences across multiple blockchains. Players embark on quests, collect evolving NFTs, and participate in automated tournaments without worrying about complex backend infrastructure.
+ChainQuest is a revolutionary cross-chain RPG that creates seamless gaming experiences across multiple blockchains. Players embark on quests, collect evolving NFTs, and participate in tournaments with real cryptocurrency rewards.
 
-### 🎯 Hackathon Tracks
-- 🎮 **Gaming DApps Automation**: Automated quest completion, reward distribution, and tournament management
-- 🎨 **NFT Infrastructure**: Dynamic NFT evolution, cross-chain trading, and metadata updates  
-- 🌐 **Cross-Chain Automation**: Seamless gameplay across Ethereum, Polygon, BSC, and Arbitrum
-
-## ✨ Key Features
-
-### 🎯 Automated Quest System
-- **Smart Quest Generation**: Kwala monitors on-chain activities and automatically generates personalized quests
+### 🎯 Quest System
+- **Smart Quest Generation**: Dynamic quest creation based on player activities
 - **Instant Reward Distribution**: Automatic NFT minting and token rewards upon quest completion
 - **Progress Tracking**: Real-time quest progress updates across all supported chains
 
-### 🔄 Evolving NFT Characters
-- **Dynamic Evolution**: NFTs automatically evolve based on player achievements and time
+### 🧬 Evolving NFT Characters
+- **Dynamic Evolution**: NFTs evolve based on player achievements and gameplay
 - **Cross-Chain Compatibility**: Characters can be used across different blockchain networks
-- **Automated Metadata Updates**: Kwala updates NFT properties and visuals automatically
+- **Metadata Updates**: NFT properties and visuals update automatically
 
 ### ⚔️ Cross-Chain Tournament System
-- **Multi-Chain Battles**: Players from different chains can compete in automated tournaments
-- **Smart Matchmaking**: Kwala pairs players based on NFT stats and experience
-- **Automated Prize Distribution**: Winners receive rewards automatically across chains
+- **Multi-Chain Battles**: Players from different chains can compete in tournaments
+- **Smart Matchmaking**: Players paired based on NFT stats and experience
+- **Prize Distribution**: Winners receive rewards automatically across chains
 
-### 🛒 Decentralized Marketplace
+### 🛒 NFT Marketplace
 - **Cross-Chain Trading**: Trade NFTs seamlessly between supported blockchains
-- **Automated Price Discovery**: Dynamic pricing based on NFT rarity and performance
-- **Instant Settlement**: Kwala handles all cross-chain transaction complexities
+- **Dynamic Pricing**: Pricing based on NFT rarity and performance
+- **Instant Settlement**: Seamless cross-chain transaction handling
 
 ## 🏗️ Technical Architecture
 
 ```mermaid
 graph TB
-    A[Frontend React App] --> B[Kwala Automation Layer]
-    B --> C[Smart Contracts]
-    B --> D[Cross-Chain Bridge]
-    C --> E[Ethereum]
-    C --> F[Polygon]
-    C --> G[BSC]
-    C --> H[Arbitrum]
+    A[Frontend React App] --> B[Smart Contracts]
+    A --> C[Cross-Chain Bridge]
+    B --> D[Polygon Amoy Testnet]
+    B --> E[Character NFTs]
+    B --> F[Quest System]
+    B --> G[Tournament Manager]
+    C --> H[Multi-Chain Support]
 ```
 
-### Frontend Stack
-- ⚛️ **React.js** with Web3 integration
-- 🌈 **RainbowKit** + **Wagmi** for wallet connections
-- 🎨 **Framer Motion** for animations
-- 📱 **Responsive Design** for all devices
-
-### Smart Contracts
-- 🎭 **ERC-721 NFT** contracts for characters and items
-- 📋 **Quest Management** contracts
-- 🏟️ **Tournament System** contracts
+### 🔧 Tech Stack
+- ⚛️ **Frontend**: React.js with Wagmi and RainbowKit
+- 🔗 **Blockchain**: Solidity smart contracts
+- 🌐 **Networks**: Polygon Amoy (testnet)
+- 🎨 **NFTs**: ERC-721 with dynamic metadata
+- 💰 **Tokens**: ERC-20 CQT reward tokens
 - 🌉 **Cross-chain Bridge** integration
 
-### Kwala Automation Workflows
-- 📊 **Quest Monitoring** and completion detection
-- 🔄 **NFT Evolution** triggers
-- 🏆 **Tournament Management**
-- 🌐 **Cross-chain Synchronization**
-
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
-- 📦 Node.js 18+
-- 🦊 MetaMask or compatible Web3 wallet
-- 💰 Testnet tokens (Sepolia ETH, Mumbai MATIC, etc.)
+- Node.js 16+
+- MetaMask wallet
+- Polygon Amoy testnet tokens
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/rohitjadhav07/Kwala.git
 cd chainquest
 
-# Install dependencies
-npm run install-all
+# Install frontend dependencies
+cd frontend
+npm install
 
-# Start development server
-npm run dev
+# Install contract dependencies
+cd ../contracts
+npm install
 ```
 
-### 🔧 Smart Contract Deployment
+### 🎮 Frontend Setup
 ```bash
-# Deploy to local network
-cd contracts
-npx hardhat node
-npm run deploy:localhost
-
-# Deploy to testnets
-npm run deploy:sepolia
-npm run deploy:mumbai
-npm run deploy:bsc-testnet
+cd frontend
+npm start
 ```
 
-### ⚙️ Kwala Setup
-1. Create a Kwala workspace at [kwala.com](https://kwala.com)
-2. Upload YAML workflows from `kwala-workflows/` directory
-3. Update contract addresses in YAML files
-4. Activate workflows in Kwala dashboard
-
-## 📁 Project Structure
+### 📁 Project Structure
 ```
 chainquest/
-├── 📱 frontend/              # React.js frontend application
+├── 📱 frontend/              # React.js application
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
 │   │   ├── pages/           # Main application pages
 │   │   ├── hooks/           # Custom React hooks
-│   │   └── config/          # Configuration files
-├── 📜 contracts/            # Smart contracts for all chains
-│   ├── contracts/           # Solidity contracts
+│   │   └── services/        # API and blockchain services
+├── 📜 contracts/            # Smart contracts
+│   ├── contracts/          # Solidity contracts
 │   ├── scripts/            # Deployment scripts
 │   └── test/               # Contract tests
-├── 🤖 kwala-workflows/      # YAML automation scripts
-│   ├── quest-automation.yaml
-│   ├── nft-evolution.yaml
-│   └── cross-chain-tournaments.yaml
-└── 📚 docs/                # Documentation and guides
+└── 📚 docs/                # Documentation
 ```
 
-## 🎯 Demo Scenarios
+## 🎮 How to Play
 
-### 1. 🆕 New Player Onboarding
-- Connect wallet to ChainQuest
-- Automatic NFT character minting
-- Receive welcome quest automatically
-- Complete first quest and receive rewards
+### Getting Started
+1. **Connect Wallet**: Connect your MetaMask to Polygon Amoy
+2. **Mint Character**: Create your first NFT character
+3. **Complete Quests**: Earn CQT tokens and experience
+4. **Join Tournaments**: Compete with other players
+5. **Trade NFTs**: Use the marketplace to trade characters
 
-### 2. 📈 Character Evolution
-- Gain experience through battles/quests
-- Watch character evolve automatically when requirements are met
-- See updated stats and visual changes across all chains
-- Receive evolution bonuses
-
-### 3. ⚔️ Cross-Chain Tournament
+### Game Flow
+- Connect wallet and mint your first character
+- Complete daily and weekly quests
+- Level up your character through gameplay
 - Register for tournament on any supported chain
 - Get matched with players from other chains
-- Battle executes automatically via Kwala
+- Battle and earn rewards
 - Receive prizes on preferred chain
 
-### 4. 🛒 Marketplace Trading
-- List NFT characters for sale
-- Automated cross-chain price discovery
-- Instant settlement across different blockchains
-- Trade characters seamlessly between chains
+## ✨ Key Features
 
-## 🏅 Innovation Highlights
-
-- 🚫 **Zero Backend Complexity**: Developers focus purely on game logic
-- 🌐 **True Cross-Chain Gaming**: First RPG with seamless multi-chain gameplay
-- 🤖 **Automated Everything**: From quests to tournaments to NFT evolution
+- 🎮 **5 Multiplayer Games**: Snake, Tetris, Pong, Flappy Bird, Memory
+- 🎯 **Quest System**: Daily and weekly challenges
+- 🏆 **Tournaments**: Competitive gameplay with prizes
+- 💰 **CQT Token Rewards**: Earn cryptocurrency while playing
+- 🎨 **NFT Characters**: Collectible and evolving game assets
+- 🛒 **Marketplace**: Trade characters and items
 - 👥 **Player-Centric Design**: Intuitive UX hiding blockchain complexities
 - ⚡ **Real-Time Updates**: Instant feedback and state synchronization
-- 🔒 **Secure & Trustless**: All automation handled by Kwala protocol
 
 ## 🎬 Demo Video
 
-[![ChainQuest Demo](https://img.youtube.com/vi/demo/maxresdefault.jpg)](https://youtube.com/watch?v=demo)
+🎥 **Watch ChainQuest in Action!**
 
 **Video Highlights:**
 - 🎮 Complete gameplay walkthrough
-- 🤖 Kwala automation in action
 - 🌐 Cross-chain functionality demo
 - 🎨 NFT evolution showcase
 - 🏆 Tournament system demonstration
 
-## 🔗 Live Links
+## 🔗 Links
 
 - 🌐 **Live Demo**: [chainquest-demo.vercel.app](https://chainquest-demo.vercel.app)
-- 🤖 **Kwala Workspace**: [kwala.com/workspace/chainquest](https://kwala.com/workspace/chainquest)
 - 🎬 **Demo Video**: [YouTube Demo](https://youtube.com/watch?v=demo)
 - 📊 **Analytics**: [Dashboard](https://chainquest-analytics.vercel.app)
 
-## 🏆 Hackathon Submission Details
+## 🏆 Project Details
 
-**Submission for:** Kwala Hacker House 2025  
-**Tracks:** Gaming DApps Automation + NFT Infrastructure + Cross-Chain Automation  
+**Project Type:** Cross-Chain Gaming Platform  
+**Blockchain:** Polygon Amoy Testnet  
+**Tracks:** Gaming DApps + NFT Infrastructure + Cross-Chain Gaming  
 **Team Size:** Solo Developer  
-**GitHub Handle:** [https://github.com/rohitjadhav07/Kwala.git]  
-**Submission Date:** [5/10/2025]
+**GitHub:** [https://github.com/rohitjadhav07/Kwala.git]  
 
-### 📋 Submission Checklist
+### 📋 Features Checklist
 - ✅ Public GitHub repository with complete code
-- ✅ Kwala YAML workflow scripts (3 files)
+- ✅ Smart contracts deployed on Polygon Amoy
+- ✅ Frontend deployed on Vercel
 - ✅ Demo video (3-5 minutes) showcasing functionality
-- ✅ Live Kwala workspace with active workflows
 - ✅ README with setup instructions and project overview
-- ✅ Smart contracts deployed on multiple testnets
-- ✅ Production-ready frontend application
+- ✅ 5 working multiplayer games
+- ✅ NFT character system with evolution
+- ✅ Quest and tournament systems
+- ✅ Cross-chain compatibility ready
 
 ## 🛠️ Development
 
-### Available Scripts
+### Smart Contract Deployment
 ```bash
-npm run dev              # Start development server
-npm run build           # Build for production
-npm run test            # Run tests
-npm run deploy          # Deploy contracts
-npm run install-all     # Install all dependencies
+cd contracts
+npx hardhat run scripts/deploy.js --network polygonAmoy
 ```
 
-### Environment Variables
+### Testing
 ```bash
-# contracts/.env
-PRIVATE_KEY=your_private_key
-SEPOLIA_RPC_URL=your_sepolia_rpc
-MUMBAI_RPC_URL=your_mumbai_rpc
-ETHERSCAN_API_KEY=your_etherscan_key
+# Test smart contracts
+cd contracts
+npx hardhat test
+
+# Test frontend
+cd frontend
+npm test
 ```
 
 ## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -239,25 +196,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- 🤖 **Kwala Team** for the amazing automation protocol
 - 🌈 **RainbowKit** for seamless wallet integration
 - ⚛️ **React Community** for the excellent ecosystem
-- 🎮 **Web3 Gaming Community** for inspiration and feedback
-
-## 📞 Contact
-
-- 🐦 **Twitter**: [@chainquest_game](https://twitter.com/chainquest_game)
-- 💬 **Discord**: [ChainQuest Community](https://discord.gg/chainquest)
-- 📧 **Email**: hello@chainquest.game
-- 🌐 **Website**: [chainquest.game](https://chainquest.game)
+- 🔗 **Wagmi** for Web3 React hooks
+- 🎨 **Lucide React** for beautiful icons
+- 🌐 **Vercel** for hosting and deployment
 
 ---
 
 <div align="center">
 
-**Built with ❤️ using Kwala automation protocol for the Kwala Hacker House 2025**
+**Built with ❤️ for the Web3 Gaming Community**
 
-[![Kwala](https://img.shields.io/badge/Powered%20by-Kwala-orange?style=for-the-badge)](https://kwala.com)
 [![Web3](https://img.shields.io/badge/Built%20for-Web3-blue?style=for-the-badge)](https://web3.foundation)
+[![Gaming](https://img.shields.io/badge/Gaming-Platform-green?style=for-the-badge)](https://chainquest-demo.vercel.app)
 
 </div>

@@ -2,13 +2,10 @@ import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Map, Clock, Trophy, Zap, CheckCircle, Circle } from 'lucide-react';
 import { useQuests } from '../hooks/useQuests';
-import { useKwalaQuests } from '../hooks/useKwala';
-import KwalaStatus from '../components/KwalaStatus';
 
 const Quests = () => {
   const { address, isConnected } = useAccount();
   const { quests, loading, completeQuest, updateQuestProgress } = useQuests();
-  const { quests: kwalaQuests, loading: kwalaLoading, completeQuest: completeKwalaQuest } = useKwalaQuests(address);
   const [filter, setFilter] = useState('all');
 
   const filteredQuests = quests.filter(quest => {
@@ -62,8 +59,31 @@ const Quests = () => {
         <p>Your quests are automatically tracked and completed by Kwala automation</p>
       </div>
 
-      {/* Real Kwala Status */}
-      <KwalaStatus />
+      {/* Quest Automation Status */}
+      <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+        <div className="card-header">
+          <div className="card-icon">
+            <Zap size={24} />
+          </div>
+          <div className="card-title">Quest Automation</div>
+        </div>
+        <div className="card-content">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ 
+              width: '12px', 
+              height: '12px', 
+              borderRadius: '50%', 
+              background: '#00ff88',
+              animation: 'pulse 2s infinite'
+            }}></div>
+            <span style={{ color: '#00ff88', fontWeight: 'bold' }}>Auto-Tracking Active</span>
+          </div>
+          <p>
+            Your quests are automatically tracked and completed when requirements are met. 
+            Rewards are distributed instantly without any manual intervention required.
+          </p>
+        </div>
+      </div>
 
       {/* Quest Filters */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
