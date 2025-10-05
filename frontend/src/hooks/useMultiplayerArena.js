@@ -6,7 +6,7 @@ export function useMultiplayerArena() {
   const { address, isConnected } = useAccount();
   const { trackArenaScore, trackBattleWin, trackBattleLoss } = useQuests();
   
-  const [gameState, setGameState] = useState('menu'); // menu, searching, playing, finished
+  const [gameState, setGameState] = useState('menu'); // menu, searching, preparing, playing, finished
   const [selectedGame, setSelectedGame] = useState('clicker');
   const [currentMatch, setCurrentMatch] = useState(null);
   const [playerScore, setPlayerScore] = useState(0);
@@ -79,13 +79,17 @@ export function useMultiplayerArena() {
       setCurrentMatch(newMatch);
       currentMatchRef.current = newMatch;
       
-      setGameState('playing');
+      setGameState('preparing');
       setPlayerScore(0);
       setOpponentScore(0);
       setTimeLeft(60);
       setIsHost(Math.random() > 0.5);
       
-      startGameLoop();
+      // Give players 3 seconds to prepare
+      setTimeout(() => {
+        setGameState('playing');
+        startGameLoop();
+      }, 3000);
     }, searchTime);
   };
 
@@ -157,8 +161,23 @@ export function useMultiplayerArena() {
     trackArenaScore(playerScore);
     if (won) {
       trackBattleWin();
+      
+      // Award tokens for winning
+      const currentTokens = parseInt(localStorage.getItem(`cqt_tokens_${address}`) || '0');
+      const newTokens = currentTokens + 50; // 50 CQT tokens for winning
+      localStorage.setItem(`cqt_tokens_${address}`, newTokens.toString());
+      
+      // Show reward notification
+      console.log(`🏆 Victory! Earned 50 CQT tokens. Total: ${newTokens} CQT`);
     } else {
       trackBattleLoss();
+      
+      // Small consolation prize for participation
+      const currentTokens = parseInt(localStorage.getItem(`cqt_tokens_${address}`) || '0');
+      const newTokens = currentTokens + 10; // 10 CQT tokens for participation
+      localStorage.setItem(`cqt_tokens_${address}`, newTokens.toString());
+      
+      console.log(`💪 Good effort! Earned 10 CQT tokens. Total: ${newTokens} CQT`);
     }
 
     saveMatchHistory(matchResult);
@@ -186,6 +205,16 @@ export function useMultiplayerArena() {
 
   // Return to menu
   const returnToMenu = () => {
+    // Clear any running intervals
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
+    if (matchTimerRef.current) {
+      clearInterval(matchTimerRef.current);
+      matchTimerRef.current = null;
+    }
+    
     setGameState('menu');
     setCurrentMatch(null);
     currentMatchRef.current = null;

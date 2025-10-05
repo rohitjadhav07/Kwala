@@ -6,6 +6,7 @@ import { useMultiplayerArena } from '../hooks/useMultiplayerArena';
 import ArenaGame from '../components/ArenaGame';
 import Leaderboard from '../components/Leaderboard';
 import GameSelector from '../components/GameSelector';
+import TokenBalance from '../components/TokenBalance';
 import SnakeGame from '../components/games/SnakeGame';
 import TetrisGame from '../components/games/TetrisGame';
 import PongGame from '../components/games/PongGame';
@@ -81,9 +82,17 @@ const Arena = () => {
 
   return (
     <div className="fade-in">
-      <div style={{ marginBottom: '2rem' }}>
-        <h1>Battle Arena</h1>
-        <p>Play games, compete in tournaments, and climb the leaderboard!</p>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '2rem' 
+      }}>
+        <div>
+          <h1>Battle Arena</h1>
+          <p>Play games, compete in tournaments, and climb the leaderboard!</p>
+        </div>
+        <TokenBalance />
       </div>
 
       {/* Arena Tabs */}
@@ -250,6 +259,33 @@ const Arena = () => {
             </div>
           )}
 
+          {gameState === 'preparing' && currentMatch && (
+            <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚔️</div>
+              <h2 style={{ color: '#00ff88' }}>Match Found!</h2>
+              <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
+                vs {currentMatch.opponent.name} (Level {currentMatch.opponent.level})
+              </p>
+              <div style={{
+                padding: '1rem',
+                background: 'rgba(0, 212, 255, 0.1)',
+                borderRadius: '12px',
+                marginBottom: '2rem'
+              }}>
+                <h3 style={{ color: '#00d4ff' }}>{currentMatch.gameMode}</h3>
+                <p>Get ready! Game starts in 3 seconds...</p>
+              </div>
+              <div style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                color: '#ff6b35',
+                animation: 'pulse 1s ease-in-out infinite'
+              }}>
+                3
+              </div>
+            </div>
+          )}
+
           {gameState === 'playing' && currentMatch && (
             <div>
               {/* Match Header */}
@@ -392,17 +428,31 @@ const Arena = () => {
                 vs {currentMatch.opponent.name} (Level {currentMatch.opponent.level})
               </p>
               
-              {playerScore > opponentScore && (
+              <div style={{ 
+                padding: '1rem',
+                background: playerScore > opponentScore 
+                  ? 'rgba(0, 255, 136, 0.1)' 
+                  : 'rgba(255, 215, 0, 0.1)',
+                borderRadius: '12px',
+                marginBottom: '2rem'
+              }}>
+                <h4 style={{ color: playerScore > opponentScore ? '#00ff88' : '#FFD700' }}>
+                  Tokens Earned:
+                </h4>
                 <div style={{ 
-                  padding: '1rem',
-                  background: 'rgba(0, 255, 136, 0.1)',
-                  borderRadius: '12px',
-                  marginBottom: '2rem'
+                  fontSize: '1.5rem', 
+                  fontWeight: 'bold',
+                  color: playerScore > opponentScore ? '#00ff88' : '#FFD700'
                 }}>
-                  <h4 style={{ color: '#00ff88' }}>Rewards Earned:</h4>
-                  <p>{currentMatch.reward}</p>
+                  +{playerScore > opponentScore ? '50' : '10'} CQT
                 </div>
-              )}
+                <p style={{ fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                  {playerScore > opponentScore 
+                    ? 'Victory bonus + participation reward!' 
+                    : 'Thanks for playing! Better luck next time!'
+                  }
+                </p>
+              </div>
 
               <button 
                 className="btn btn-primary"
@@ -413,9 +463,9 @@ const Arena = () => {
               </button>
               <button 
                 className="btn btn-secondary"
-                onClick={findMatch}
+                onClick={() => findMatch(currentMatch.gameType)}
               >
-                Find Another Match
+                Play Again
               </button>
             </div>
           )}
@@ -697,7 +747,30 @@ const Arena = () => {
                 </div>
                 
                 {tournament.status === 'registration' ? (
-                  <button className="btn btn-primary">
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => {
+                      // Register for tournament
+                      const registrations = JSON.parse(localStorage.getItem('tournament_registrations') || '{}');
+                      registrations[tournament.id] = {
+                        tournamentId: tournament.id,
+                        playerAddress: address,
+                        registrationTime: Date.now(),
+                        status: 'registered'
+                      };
+                      localStorage.setItem('tournament_registrations', JSON.stringify(registrations));
+                      
+                      // Deduct entry fee from tokens
+                      const currentTokens = parseInt(localStorage.getItem(`cqt_tokens_${address}`) || '0');
+                      const entryFeeAmount = parseInt(tournament.entryFee.replace(/[^\d]/g, '')) || 0;
+                      if (currentTokens >= entryFeeAmount) {
+                        localStorage.setItem(`cqt_tokens_${address}`, (currentTokens - entryFeeAmount).toString());
+                        alert(`Successfully registered for ${tournament.name}! Entry fee: ${tournament.entryFee}`);
+                      } else {
+                        alert(`Insufficient CQT tokens! You need ${entryFeeAmount} CQT but only have ${currentTokens} CQT.`);
+                      }
+                    }}
+                  >
                     <Star size={16} style={{ marginRight: '0.5rem' }} />
                     Register
                   </button>
