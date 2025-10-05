@@ -20,6 +20,7 @@ const Arena = () => {
     setSelectedGame,
     currentMatch,
     playerScore,
+    setPlayerScore,
     opponentScore,
     timeLeft,
     matchHistory,
@@ -30,6 +31,7 @@ const Arena = () => {
   } = useMultiplayerArena();
   const [latestScore, setLatestScore] = useState(null);
   const [activeTab, setActiveTab] = useState('multiplayer'); // multiplayer, game, tournaments, leaderboard
+  const [soloPlayerScore, setSoloPlayerScore] = useState(0);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -455,28 +457,40 @@ const Arena = () => {
               {selectedGame === 'snake' && (
                 <div>
                   <h3 style={{ marginBottom: '1rem' }}>🐍 Snake Game</h3>
-                  <SnakeGame onScoreUpdate={setLatestScore} />
+                  <SnakeGame onScoreUpdate={(score) => {
+                    setLatestScore(score);
+                    setSoloPlayerScore(score);
+                  }} />
                 </div>
               )}
 
               {selectedGame === 'tetris' && (
                 <div>
                   <h3 style={{ marginBottom: '1rem' }}>🧩 Tetris</h3>
-                  <TetrisGame onScoreUpdate={setLatestScore} />
+                  <TetrisGame onScoreUpdate={(score) => {
+                    setLatestScore(score);
+                    setSoloPlayerScore(score);
+                  }} />
                 </div>
               )}
 
               {selectedGame === 'pong' && (
                 <div>
                   <h3 style={{ marginBottom: '1rem' }}>🏓 Pong</h3>
-                  <PongGame onScoreUpdate={setLatestScore} />
+                  <PongGame onScoreUpdate={(score) => {
+                    setLatestScore(score);
+                    setSoloPlayerScore(score);
+                  }} />
                 </div>
               )}
 
               {selectedGame === 'flappy' && (
                 <div>
                   <h3 style={{ marginBottom: '1rem' }}>🐦 Flappy Bird</h3>
-                  <FlappyGame onScoreUpdate={setLatestScore} />
+                  <FlappyGame onScoreUpdate={(score) => {
+                    setLatestScore(score);
+                    setSoloPlayerScore(score);
+                  }} />
                 </div>
               )}
               

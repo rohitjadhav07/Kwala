@@ -208,6 +208,7 @@ export function useMultiplayerArena() {
     setSelectedGame,
     currentMatch,
     playerScore,
+    setPlayerScore,
     opponentScore,
     timeLeft,
     isHost,
