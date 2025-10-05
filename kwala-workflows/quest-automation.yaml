@@ -1,7 +1,6 @@
-workflow:
-  name: "ChainQuest Quest Automation"
-  description: "Automated quest generation and completion tracking"
-  version: "1.0.0"
+name: "ChainQuest Quest Automation"
+description: "Automated quest generation and completion tracking"
+version: "1.0.0"
 
 triggers:
   - name: "daily_quest_reset"

@@ -1,7 +1,6 @@
-workflow:
-  name: "ChainQuest Character Evolution"
-  description: "Automated NFT character evolution based on activity"
-  version: "1.0.0"
+name: "ChainQuest Character Evolution"
+description: "Automated NFT character evolution based on activity"
+version: "1.0.0"
 
 triggers:
   - name: "evolution_check_schedule"

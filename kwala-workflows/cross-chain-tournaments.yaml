@@ -1,7 +1,6 @@
-workflow:
-  name: "ChainQuest Tournament Automation"
-  description: "Automated tournament creation and management"
-  version: "1.0.0"
+name: "ChainQuest Tournament Automation"
+description: "Automated tournament creation and management"
+version: "1.0.0"
 
 triggers:
   - name: "weekly_tournament_schedule"
