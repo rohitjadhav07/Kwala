@@ -24,11 +24,9 @@ CHARACTER_CONTRACT_ADDRESS=0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D
 ### 3. Create Kwala Workspace
 1. Go to https://kwala.com
 2. Create account and workspace
-3. Upload **simplified** YAML files:
-   - `kwala-workflows/cross-chain-tournaments-simple.yaml`
-   - `kwala-workflows/quest-automation-simple.yaml`
-   - `kwala-workflows/nft-evolution-simple.yaml`
-4. Activate workflows
+3. Upload **simple** YAML file:
+   - `kwala-workflows/chainquest-simple.yaml`
+4. Activate workflow
 
 ### 4. Update Frontend
 Set backend URL in `frontend/.env`:
@@ -39,11 +37,11 @@ REACT_APP_BACKEND_URL=https://your-backend.vercel.app
 ## 🎯 Features Now Working
 
 ✅ **Real Kwala Status** - Live connection monitoring
-✅ **Quest Automation** - Automatic quest completion
-✅ **Character Evolution** - NFT evolution triggers  
-✅ **Tournament Management** - Automated tournaments
-✅ **Cross-Chain Sync** - Multi-blockchain support
+✅ **NFT Activity Monitoring** - Tracks all NFT transfers
 ✅ **Webhook Integration** - Real-time notifications
+✅ **Event Processing** - Handles mint/transfer events
+✅ **Game Logic Triggers** - Foundation for quest/tournament automation
+✅ **Cross-Chain Ready** - Works on Polygon Amoy
 
 ## 🔧 API Endpoints
 

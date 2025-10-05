@@ -1,11 +1,9 @@
-Name: ChainQuest_Tournament_Automation
+Name: ChainQuest_NFT_Monitor
 Trigger:
-  ExecuteAfter: event
-  RepeatEvery: event
-  TriggerChainID: 80002
 TriggerSourceContract: 0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D
+TriggerChainID: 80002
 TriggerEventName: Transfer(address,address,uint256)
-TriggerEventFilter: from=0x0000000000000000000000000000000000000000
+TriggerEventFilter: NA
 TriggerSourceContractABI: W3siaW5wdXRzIjpbeyJpbnRlcm5hbFR5cGUiOiJhZGRyZXNzIiwibmFtZSI6InRvIiwidHlwZSI6ImFkZHJlc3MifSx7ImludGVybmFsVHlwZSI6InVpbnQyNTYiLCJuYW1lIjoidG9rZW5JZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbnRlcm5hbFR5cGUiOiJzdHJpbmciLCJuYW1lIjoidXJpIiwidHlwZSI6InN0cmluZyJ9XSwibmFtZSI6Im1pbnQiLCJvdXRwdXRzIjpbXSwic3RhdGVNdXRhYmlsaXR5Ijoibm9ucGF5YWJsZSIsInR5cGUiOiJmdW5jdGlvbiJ9LHsiaW5wdXRzIjpbeyJpbnRlcm5hbFR5cGUiOiJhZGRyZXNzIiwibmFtZSI6ImZyb20iLCJ0eXBlIjoiYWRkcmVzcyJ9LHsiaW50ZXJuYWxUeXBlIjoiYWRkcmVzcyIsIm5hbWUiOiJ0byIsInR5cGUiOiJhZGRyZXNzIn0seyJpbnRlcm5hbFR5cGUiOiJ1aW50MjU2IiwibmFtZSI6InRva2VuSWQiLCJ0eXBlIjoidWludDI1NiJ9XSwibmFtZSI6InRyYW5zZmVyRnJvbSIsIm91dHB1dHMiOltdLCJzdGF0ZU11dGFiaWxpdHkiOiJub25wYXlhYmxlIiwidHlwZSI6ImZ1bmN0aW9uIn0seyJhbm9ueW1vdXMiOmZhbHNlLCJpbnB1dHMiOlt7ImluZGV4ZWQiOnRydWUsImludGVybmFsVHlwZSI6ImFkZHJlc3MiLCJuYW1lIjoiZnJvbSIsInR5cGUiOiJhZGRyZXNzIn0seyJpbmRleGVkIjp0cnVlLCJpbnRlcm5hbFR5cGUiOiJhZGRyZXNzIiwibmFtZSI6InRvIiwidHlwZSI6ImFkZHJlc3MifSx7ImluZGV4ZWQiOnRydWUsImludGVybmFsVHlwZSI6InVpbnQyNTYiLCJuYW1lIjoidG9rZW5JZCIsInR5cGUiOiJ1aW50MjU2In1dLCJuYW1lIjoiVHJhbnNmZXIiLCJ0eXBlIjoiZXZlbnQifV0=
 TriggerPrice: NA
 RecurringSourceContract: NA
@@ -14,34 +12,21 @@ RecurringEventName: NA
 RecurringEventFilter: NA
 RecurringSourceContractABI: NA
 RecurringPrice: NA
+RepeatEvery: event
+ExecuteAfter: event
 ExpiresIn: 1781796603
 Meta: NA
-ActionStatusNotificationPOSTURL: https://chainquest-backend.vercel.app/webhooks/tournament-created
+ActionStatusNotificationPOSTURL: https://chainquest-backend.vercel.app/webhooks/nft-activity
 ActionStatusNotificationAPIKey: NA
 Actions:
-- Name: notify_tournament_activity
+- Name: notify_nft_activity
   Type: post
-  APIEndpoint: https://chainquest-backend.vercel.app/webhooks/tournament-created
+  APIEndpoint: https://chainquest-backend.vercel.app/webhooks/nft-activity
   APIPayload:
-    message: "New character minted - Tournament activity detected"
-    player: "{{event.to}}"
+    message: "NFT Transfer detected"
+    from: "{{event.from}}"
+    to: "{{event.to}}"
     tokenId: "{{event.tokenId}}"
-    chain: "polygon-amoy"
-  TargetContract: NA
-  TargetFunction: NA
-  TargetParams: NA
-  ChainID: NA
-  EncodedABI: NA
-  Bytecode: NA
-  Metadata: NA
-  RetriesUntilSuccess: 2
-- Name: create_tournament
-  Type: post
-  APIEndpoint: https://chainquest-backend.vercel.app/api/tournaments/create
-  APIPayload:
-    type: "weekly_championship"
-    trigger: "character_mint"
-    player: "{{event.to}}"
   TargetContract: NA
   TargetFunction: NA
   TargetParams: NA

@@ -186,6 +186,43 @@ router.post('/tournament-completed', verifyKwalaWebhook, async (req, res) => {
   }
 });
 
+// NFT activity webhook (simplified)
+router.post('/nft-activity', (req, res) => {
+  try {
+    console.log('🎨 NFT activity webhook received:', req.body);
+    
+    const { message, from, to, tokenId } = req.body;
+    
+    // Simple processing - just log the activity
+    console.log(`NFT Transfer: Token ${tokenId} from ${from} to ${to}`);
+    
+    // You can add your game logic here:
+    // - Award quest completion
+    // - Trigger character evolution
+    // - Create tournaments
+    // - Update leaderboards
+    
+    res.json({ 
+      status: 'success', 
+      message: 'NFT activity processed',
+      timestamp: new Date().toISOString(),
+      data: {
+        tokenId,
+        from,
+        to,
+        processed: true
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error processing NFT activity:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message 
+    });
+  }
+});
+
 // Generic webhook for testing
 router.post('/test', (req, res) => {
   console.log('🧪 Test webhook received:', req.body);
