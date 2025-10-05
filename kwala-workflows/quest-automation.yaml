@@ -1,8 +1,10 @@
 # ChainQuest - Automated Quest System
 # This workflow monitors player activities and automatically manages quests
 
-name: "Quest Automation System"
-description: "Monitors on-chain activities and manages quest completion automatically"
+workflow:
+  name: "Quest Automation System"
+  description: "Monitors on-chain activities and manages quest completion automatically"
+  version: "1.0.0"
 
 triggers:
   # Monitor NFT transfers to detect character acquisitions

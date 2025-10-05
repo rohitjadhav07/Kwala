@@ -1,0 +1,44 @@
+workflow:
+  name: "ChainQuest Tournament Automation"
+  description: "Automated tournament creation and management"
+  version: "1.0.0"
+
+triggers:
+  - name: "weekly_tournament_schedule"
+    type: "schedule"
+    cron: "0 18 * * 5"
+    
+  - name: "daily_arena_schedule"
+    type: "schedule"
+    cron: "0 12 * * *"
+
+actions:
+  - name: "create_weekly_tournament"
+    type: "webhook"
+    url: "https://chainquest-backend.vercel.app/api/tournaments/create"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    body:
+      type: "weekly_championship"
+    conditions:
+      - trigger: "weekly_tournament_schedule"
+      
+  - name: "create_daily_arena"
+    type: "webhook"
+    url: "https://chainquest-backend.vercel.app/api/tournaments/create"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    body:
+      type: "daily_skirmish"
+    conditions:
+      - trigger: "daily_arena_schedule"
+
+notifications:
+  - name: "tournament_created_notification"
+    type: "webhook"
+    url: "https://chainquest-backend.vercel.app/webhooks/tournament-created"
+    conditions:
+      - action: "create_weekly_tournament"
+      - action: "create_daily_arena"

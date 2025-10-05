@@ -1,0 +1,45 @@
+workflow:
+  name: "ChainQuest Character Evolution"
+  description: "Automated NFT character evolution based on activity"
+  version: "1.0.0"
+
+triggers:
+  - name: "evolution_check_schedule"
+    type: "schedule"
+    cron: "0 */6 * * *"
+    
+  - name: "character_transfer"
+    type: "contract_event"
+    contract: "0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D"
+    event: "Transfer"
+    chain: "polygon-amoy"
+
+actions:
+  - name: "check_evolution_eligibility"
+    type: "webhook"
+    url: "https://chainquest-backend.vercel.app/api/characters/check-evolution"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    conditions:
+      - trigger: "evolution_check_schedule"
+      
+  - name: "trigger_evolution"
+    type: "webhook"
+    url: "https://chainquest-backend.vercel.app/webhooks/evolution"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    body:
+      tokenId: "{{trigger.tokenId}}"
+      owner: "{{trigger.to}}"
+      chain: "polygon-amoy"
+    conditions:
+      - trigger: "character_transfer"
+
+notifications:
+  - name: "evolution_completed_notification"
+    type: "webhook"
+    url: "https://chainquest-backend.vercel.app/webhooks/evolution"
+    conditions:
+      - action: "trigger_evolution"

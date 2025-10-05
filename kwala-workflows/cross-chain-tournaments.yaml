@@ -1,16 +1,18 @@
 # ChainQuest - Cross-Chain Tournament Automation
 # This workflow manages automated tournaments across multiple blockchains
 
-name: "Cross-Chain Tournament System"
-description: "Automated tournament creation, matchmaking, and prize distribution across chains"
+workflow:
+  name: "Cross-Chain Tournament System"
+  description: "Automated tournament creation, matchmaking, and prize distribution across chains"
+  version: "1.0.0"
 
 triggers:
   # Tournament registration events
   - name: "tournament_registration"
     type: "contract_event"
-    contract: "0x..." # Tournament Manager contract
-    event: "PlayerRegistered"
-    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    contract: "0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D" # ChainQuest Character contract
+    event: "Transfer"
+    chains: ["polygon-amoy"]
     
   # Scheduled tournament creation
   - name: "weekly_tournament"
@@ -24,16 +26,16 @@ triggers:
   # Battle completion events
   - name: "battle_completed"
     type: "contract_event"
-    contract: "0x..." # Battle Arena contract
-    event: "BattleCompleted"
-    chains: ["ethereum", "polygon", "bsc", "arbitrum"]
+    contract: "0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D" # ChainQuest Character contract
+    event: "Transfer"
+    chains: ["polygon-amoy"]
 
 actions:
   # Create new tournaments automatically
   - name: "create_weekly_tournament"
-    type: "contract_call"
-    contract: "0x..." # Tournament Factory contract
-    function: "createTournament"
+    type: "webhook_call"
+    url: "https://chainquest-backend.vercel.app/api/tournaments/create"
+    method: "POST"
     conditions:
       - trigger: "weekly_tournament"
     parameters:
@@ -47,9 +49,9 @@ actions:
         value: "{{time.now + 24h}}"
         
   - name: "create_daily_arena"
-    type: "contract_call"
-    contract: "0x..." # Arena Manager contract
-    function: "createArena"
+    type: "webhook_call"
+    url: "https://chainquest-backend.vercel.app/api/tournaments/create"
+    method: "POST"
     conditions:
       - trigger: "daily_arena"
     parameters:

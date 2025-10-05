@@ -1,8 +1,10 @@
 # ChainQuest - NFT Evolution Automation
 # This workflow handles automatic NFT character evolution and upgrades
 
-name: "NFT Evolution System"
-description: "Automatically evolves NFT characters based on achievements and time"
+workflow:
+  name: "NFT Evolution System"
+  description: "Automatically evolves NFT characters based on achievements and time"
+  version: "1.0.0"
 
 triggers:
   # Monitor experience gain events

@@ -4,9 +4,11 @@
 
 ### 1. Deploy Backend API
 ```bash
-cd backend
-npm install
-vercel --prod
+# Windows
+deploy-backend.bat
+
+# Linux/Mac
+./deploy-backend.sh
 ```
 
 ### 2. Configure Environment Variables
@@ -22,10 +24,11 @@ CHARACTER_CONTRACT_ADDRESS=0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D
 ### 3. Create Kwala Workspace
 1. Go to https://kwala.com
 2. Create account and workspace
-3. Upload YAML files from `kwala-workflows/`
-4. Update contract addresses in workflows
-5. Set webhook URLs to your backend
-6. Activate workflows
+3. Upload **simplified** YAML files:
+   - `kwala-workflows/cross-chain-tournaments-simple.yaml`
+   - `kwala-workflows/quest-automation-simple.yaml`
+   - `kwala-workflows/nft-evolution-simple.yaml`
+4. Activate workflows
 
 ### 4. Update Frontend
 Set backend URL in `frontend/.env`:
