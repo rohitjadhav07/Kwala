@@ -39,7 +39,7 @@ const polygonAmoy = {
   testnet: true,
 };
 
-// Define localhost chain
+// Define localhost chain (development only)
 const localhost = {
   id: 1337,
   name: 'Localhost',
@@ -63,8 +63,13 @@ if (process.env.REACT_APP_ALCHEMY_API_KEY) {
   providers.unshift(alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_API_KEY }));
 }
 
+// Configure chains based on environment
+const supportedChains = process.env.NODE_ENV === 'production' 
+  ? [polygonAmoy, polygon, mainnet, bsc, arbitrum] // Production: no localhost
+  : [polygonAmoy, polygon, mainnet, bsc, arbitrum, sepolia, polygonMumbai, localhost]; // Development: include localhost
+
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [localhost, polygonAmoy, mainnet, polygon, bsc, arbitrum, sepolia, polygonMumbai],
+  supportedChains,
   providers
 );
 
