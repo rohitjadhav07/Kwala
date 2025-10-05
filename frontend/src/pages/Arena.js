@@ -5,12 +5,19 @@ import { useTournaments } from '../hooks/useTournaments';
 import { useMultiplayerArena } from '../hooks/useMultiplayerArena';
 import ArenaGame from '../components/ArenaGame';
 import Leaderboard from '../components/Leaderboard';
+import GameSelector from '../components/GameSelector';
+import SnakeGame from '../components/games/SnakeGame';
+import TetrisGame from '../components/games/TetrisGame';
+import PongGame from '../components/games/PongGame';
+import FlappyGame from '../components/games/FlappyGame';
 
 const Arena = () => {
   const { address, isConnected } = useAccount();
   const { tournaments, activeBattles, loading } = useTournaments();
   const {
     gameState,
+    selectedGame,
+    setSelectedGame,
     currentMatch,
     playerScore,
     opponentScore,
@@ -125,10 +132,10 @@ const Arena = () => {
                   <div className="card-icon">
                     <Users size={24} />
                   </div>
-                  <div className="card-title">Real-Time 1v1 Battles</div>
+                  <div className="card-title">Real-Time Multiplayer Battles</div>
                 </div>
                 <div className="card-content">
-                  <p>Challenge other players to real-time battles! Score more points than your opponent in 60 seconds to win rewards.</p>
+                  <p>Challenge other players in various games! Compete in real-time and earn rewards based on your performance.</p>
                   
                   <div style={{ 
                     display: 'grid', 
@@ -141,27 +148,38 @@ const Arena = () => {
                       <p>50 XP + 0.01 MATIC</p>
                     </div>
                     <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(0, 212, 255, 0.1)', borderRadius: '12px' }}>
-                      <h4 style={{ color: '#00d4ff' }}>⚡ Fast Matches</h4>
-                      <p>60 second battles</p>
+                      <h4 style={{ color: '#00d4ff' }}>⚡ Multiple Games</h4>
+                      <p>5 different game modes</p>
                     </div>
                     <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255, 107, 53, 0.1)', borderRadius: '12px' }}>
                       <h4 style={{ color: '#ff6b35' }}>🎯 Skill Based</h4>
-                      <p>Click accuracy matters</p>
+                      <p>Real-time competition</p>
                     </div>
                   </div>
+                </div>
+              </div>
 
+              {/* Game Selection */}
+              <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+                <GameSelector 
+                  selectedGame={selectedGame}
+                  onGameSelect={setSelectedGame}
+                  isMultiplayer={true}
+                />
+                
+                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                   <button 
                     className="btn btn-primary"
-                    onClick={findMatch}
+                    onClick={() => findMatch(selectedGame)}
+                    disabled={!selectedGame}
                     style={{ 
-                      width: '100%', 
                       fontSize: '1.2rem', 
-                      padding: '1rem',
+                      padding: '1rem 2rem',
                       background: 'linear-gradient(135deg, #00ff88, #00cc66)'
                     }}
                   >
                     <Play size={20} style={{ marginRight: '0.5rem' }} />
-                    Find Match
+                    Find Match - {selectedGame ? selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1) : 'Select Game'}
                   </button>
                 </div>
               </div>
@@ -261,40 +279,78 @@ const Arena = () => {
 
               {/* Game Area */}
               <div className="dashboard-card" style={{ marginBottom: '1rem' }}>
-                <div style={{ 
-                  height: '400px', 
-                  background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1))',
-                  borderRadius: '12px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  cursor: 'crosshair'
-                }}
-                onClick={playerAction}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    textAlign: 'center',
-                    color: 'rgba(255, 255, 255, 0.7)'
-                  }}>
-                    <Target size={48} style={{ marginBottom: '1rem' }} />
-                    <h3>Click to Score Points!</h3>
-                    <p>The faster you click, the more points you earn</p>
+                {currentMatch.gameType === 'clicker' && (
+                  <div style={{ 
+                    height: '400px', 
+                    background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1))',
+                    borderRadius: '12px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'crosshair'
+                  }}
+                  onClick={playerAction}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      textAlign: 'center',
+                      color: 'rgba(255, 255, 255, 0.7)'
+                    }}>
+                      <Target size={48} style={{ marginBottom: '1rem' }} />
+                      <h3>Click to Score Points!</h3>
+                      <p>The faster you click, the more points you earn</p>
+                    </div>
+                    
+                    {/* Animated background effects */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `radial-gradient(circle at ${Math.random() * 100}% ${Math.random() * 100}%, rgba(0, 255, 136, 0.3), transparent 50%)`,
+                      animation: 'pulse 2s ease-in-out infinite'
+                    }} />
                   </div>
-                  
-                  {/* Animated background effects */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: `radial-gradient(circle at ${Math.random() * 100}% ${Math.random() * 100}%, rgba(0, 255, 136, 0.3), transparent 50%)`,
-                    animation: 'pulse 2s ease-in-out infinite'
-                  }} />
-                </div>
+                )}
+
+                {currentMatch.gameType === 'snake' && (
+                  <SnakeGame 
+                    isMultiplayer={true}
+                    onScoreUpdate={(score) => setPlayerScore(score)}
+                    gameState={gameState}
+                    timeLeft={timeLeft}
+                  />
+                )}
+
+                {currentMatch.gameType === 'tetris' && (
+                  <TetrisGame 
+                    isMultiplayer={true}
+                    onScoreUpdate={(score) => setPlayerScore(score)}
+                    gameState={gameState}
+                    timeLeft={timeLeft}
+                  />
+                )}
+
+                {currentMatch.gameType === 'pong' && (
+                  <PongGame 
+                    isMultiplayer={true}
+                    onScoreUpdate={(score) => setPlayerScore(score)}
+                    gameState={gameState}
+                    timeLeft={timeLeft}
+                  />
+                )}
+
+                {currentMatch.gameType === 'flappy' && (
+                  <FlappyGame 
+                    isMultiplayer={true}
+                    onScoreUpdate={(score) => setPlayerScore(score)}
+                    gameState={gameState}
+                    timeLeft={timeLeft}
+                  />
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
@@ -366,31 +422,85 @@ const Arena = () => {
 
       {/* Arena Game Tab */}
       {activeTab === 'game' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-          <div>
-            <h2 style={{ marginBottom: '1rem' }}>🎯 Arena Challenge</h2>
-            <ArenaGame onScoreUpdate={setLatestScore} />
-            
-            <div style={{ 
-              marginTop: '1rem',
-              padding: '1rem',
-              background: 'rgba(0, 212, 255, 0.1)',
-              borderRadius: '12px',
-              border: '1px solid rgba(0, 212, 255, 0.2)'
-            }}>
-              <h4 style={{ margin: '0 0 0.5rem 0', color: '#00d4ff' }}>How to Play:</h4>
-              <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem' }}>
-                <li>Click on targets to earn points</li>
-                <li>Golden targets give 5x points but disappear faster</li>
-                <li>Build combos for score multipliers</li>
-                <li>Higher scores = better leaderboard position</li>
-                <li>Weekly rewards based on final ranking</li>
-              </ul>
+        <div>
+          <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+            <div className="card-header">
+              <div className="card-icon">
+                <Gamepad2 size={24} />
+              </div>
+              <div className="card-title">Solo Game Arena</div>
+            </div>
+            <div className="card-content">
+              <p>Practice your skills in solo mode! Play different games to improve and climb the leaderboard.</p>
             </div>
           </div>
-          
-          <div>
-            <Leaderboard newScore={latestScore} />
+
+          <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+            <GameSelector 
+              selectedGame={selectedGame}
+              onGameSelect={setSelectedGame}
+              isMultiplayer={false}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+            <div>
+              {selectedGame === 'clicker' && (
+                <div>
+                  <h3 style={{ marginBottom: '1rem' }}>🎯 Target Clicker</h3>
+                  <ArenaGame onScoreUpdate={setLatestScore} />
+                </div>
+              )}
+
+              {selectedGame === 'snake' && (
+                <div>
+                  <h3 style={{ marginBottom: '1rem' }}>🐍 Snake Game</h3>
+                  <SnakeGame onScoreUpdate={setLatestScore} />
+                </div>
+              )}
+
+              {selectedGame === 'tetris' && (
+                <div>
+                  <h3 style={{ marginBottom: '1rem' }}>🧩 Tetris</h3>
+                  <TetrisGame onScoreUpdate={setLatestScore} />
+                </div>
+              )}
+
+              {selectedGame === 'pong' && (
+                <div>
+                  <h3 style={{ marginBottom: '1rem' }}>🏓 Pong</h3>
+                  <PongGame onScoreUpdate={setLatestScore} />
+                </div>
+              )}
+
+              {selectedGame === 'flappy' && (
+                <div>
+                  <h3 style={{ marginBottom: '1rem' }}>🐦 Flappy Bird</h3>
+                  <FlappyGame onScoreUpdate={setLatestScore} />
+                </div>
+              )}
+              
+              <div style={{ 
+                marginTop: '1rem',
+                padding: '1rem',
+                background: 'rgba(0, 212, 255, 0.1)',
+                borderRadius: '12px',
+                border: '1px solid rgba(0, 212, 255, 0.2)'
+              }}>
+                <h4 style={{ margin: '0 0 0.5rem 0', color: '#00d4ff' }}>Game Tips:</h4>
+                <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem' }}>
+                  <li>Practice in solo mode to improve your skills</li>
+                  <li>Higher scores = better leaderboard position</li>
+                  <li>Each game has different scoring mechanics</li>
+                  <li>Master multiple games for better multiplayer performance</li>
+                  <li>Weekly rewards based on final ranking</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div>
+              <Leaderboard newScore={latestScore} />
+            </div>
           </div>
         </div>
       )}

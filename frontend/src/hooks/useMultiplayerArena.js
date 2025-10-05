@@ -7,6 +7,7 @@ export function useMultiplayerArena() {
   const { trackArenaScore, trackBattleWin, trackBattleLoss } = useQuests();
   
   const [gameState, setGameState] = useState('menu'); // menu, searching, playing, finished
+  const [selectedGame, setSelectedGame] = useState('clicker');
   const [currentMatch, setCurrentMatch] = useState(null);
   const [playerScore, setPlayerScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
@@ -38,9 +39,10 @@ export function useMultiplayerArena() {
   };
 
   // Simulate matchmaking
-  const findMatch = () => {
+  const findMatch = (gameType = selectedGame) => {
     if (!isConnected) return;
     
+    setSelectedGame(gameType);
     setGameState('searching');
     
     // Simulate finding an opponent (2-5 seconds)
@@ -57,11 +59,20 @@ export function useMultiplayerArena() {
       
       const opponent = opponents[Math.floor(Math.random() * opponents.length)];
       
+      const gameNames = {
+        clicker: 'Target Clicker Battle',
+        snake: 'Snake Showdown',
+        tetris: 'Tetris Duel',
+        pong: 'Pong Championship',
+        flappy: 'Flappy Bird Race'
+      };
+
       const newMatch = {
         id: Date.now(),
         opponent,
+        gameType: gameType,
         startTime: Date.now(),
-        gameMode: '1v1 Battle',
+        gameMode: gameNames[gameType] || '1v1 Battle',
         reward: '50 XP + 0.01 MATIC'
       };
       
@@ -193,6 +204,8 @@ export function useMultiplayerArena() {
 
   return {
     gameState,
+    selectedGame,
+    setSelectedGame,
     currentMatch,
     playerScore,
     opponentScore,
