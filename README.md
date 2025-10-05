@@ -84,7 +84,7 @@ graph TB
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/[your-username]/chainquest
+git clone https://github.com/rohitjadhav07/Kwala.git
 cd chainquest
 
 # Install dependencies
@@ -191,8 +191,8 @@ chainquest/
 **Submission for:** Kwala Hacker House 2025  
 **Tracks:** Gaming DApps Automation + NFT Infrastructure + Cross-Chain Automation  
 **Team Size:** Solo Developer  
-**GitHub Handle:** [your-github-handle]  
-**Submission Date:** [Current Date]
+**GitHub Handle:** [https://github.com/rohitjadhav07/Kwala.git]  
+**Submission Date:** [5/10/2025]
 
 ### 📋 Submission Checklist
 - ✅ Public GitHub repository with complete code
