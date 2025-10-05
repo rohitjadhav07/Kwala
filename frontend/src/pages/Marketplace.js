@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import { ShoppingCart, TrendingUp, Zap, Star, Filter, Package, Wallet } from 'lucide-react';
 import { useMarketplaceContract } from '../hooks/useMarketplaceContract';
 import { useMarketplace } from '../hooks/useMarketplace';
+import NetworkSwitcher from '../components/NetworkSwitcher';
 
 const Marketplace = () => {
   const { address, isConnected } = useAccount();
@@ -17,6 +18,10 @@ const Marketplace = () => {
   } = useMarketplace();
   const [filter, setFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('marketplace');
+  const { chain } = useNetwork();
+  
+  // Check if on correct network
+  const isCorrectNetwork = chain?.id === 137 || chain?.id === 80001 || chain?.id === 80002;
 
   const getRarityColor = (rarity) => {
     switch (rarity) {
@@ -103,6 +108,18 @@ const Marketplace = () => {
       <div className="dashboard-card" style={{ textAlign: 'center', margin: '2rem 0' }}>
         <h2>Connect Your Wallet</h2>
         <p>Connect your wallet to browse and trade NFT characters across multiple chains.</p>
+      </div>
+    );
+  }
+
+  if (!isCorrectNetwork) {
+    return (
+      <div className="fade-in">
+        <div style={{ marginBottom: '2rem' }}>
+          <h1>Cross-Chain Marketplace</h1>
+          <p>Trade NFT characters seamlessly across multiple blockchains</p>
+        </div>
+        <NetworkSwitcher />
       </div>
     );
   }

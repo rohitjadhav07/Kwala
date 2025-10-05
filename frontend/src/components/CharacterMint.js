@@ -6,6 +6,8 @@ import { CONTRACT_ADDRESSES, CHARACTER_ABI } from '../config/contracts';
 import { useQuests } from '../hooks/useQuests';
 import { Wand2, Sparkles, Download, RefreshCw, Palette, Zap, Upload, AlertCircle } from 'lucide-react';
 import AICharacterGenerator from './AICharacterGenerator';
+import NetworkSwitcher from './NetworkSwitcher';
+import TestnetFaucet from './TestnetFaucet';
 
 const CharacterMint = () => {
   const { address, isConnected } = useAccount();
@@ -222,16 +224,15 @@ const CharacterMint = () => {
   
   if (!isCorrectNetwork) {
     return (
-      <div className="dashboard-card" style={{ textAlign: 'center', margin: '2rem 0' }}>
-        <AlertCircle size={48} color="#ff6b35" style={{ marginBottom: '1rem' }} />
-        <h2>Wrong Network</h2>
-        <p style={{ marginBottom: '1rem' }}>
-          Please switch to Polygon network to mint characters.
-        </p>
-        <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-          Current network: {chain?.name || 'Unknown'}<br />
-          Required: Polygon (MATIC)
-        </p>
+      <div className="fade-in">
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <Wand2 size={32} color="#ff6b35" />
+            AI Character Mint
+          </h1>
+          <p>Create unique NFT characters with AI-generated artwork and mint them to the blockchain</p>
+        </div>
+        <NetworkSwitcher />
       </div>
     );
   }
@@ -284,6 +285,9 @@ const CharacterMint = () => {
         </h1>
         <p>Create unique NFT characters with AI-generated artwork and mint them to the blockchain</p>
       </div>
+
+      {/* Testnet Faucet */}
+      <TestnetFaucet />
 
       {/* Character Class Selection */}
       <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
