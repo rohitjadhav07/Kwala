@@ -170,7 +170,7 @@ special_events:
 notifications:
   - name: "tournament_created"
     type: "webhook"
-    url: "https://chainquest-api.vercel.app/webhooks/tournament-created"
+    url: "https://chainquest-backend.vercel.app/webhooks/tournament-created"
     conditions:
       - action: "create_weekly_tournament"
       - action: "create_daily_arena"
@@ -182,7 +182,7 @@ notifications:
       
   - name: "battle_result"
     type: "webhook"
-    url: "https://chainquest-api.vercel.app/webhooks/battle-result"
+    url: "https://chainquest-backend.vercel.app/webhooks/battle-result"
     conditions:
       - action: "execute_battle"
     payload:
@@ -193,7 +193,7 @@ notifications:
       
   - name: "tournament_completed"
     type: "webhook"
-    url: "https://chainquest-api.vercel.app/webhooks/tournament-completed"
+    url: "https://chainquest-backend.vercel.app/webhooks/tournament-completed"
     conditions:
       - action: "distribute_tournament_prizes"
     payload:

@@ -75,7 +75,7 @@ actions:
 notifications:
   - name: "quest_completed"
     type: "webhook"
-    url: "https://chainquest-api.vercel.app/webhooks/quest-completed"
+    url: "https://chainquest-backend.vercel.app/webhooks/quest-completed"
     conditions:
       - action: "reward_quest_completion"
     payload:
@@ -85,7 +85,7 @@ notifications:
       
   - name: "new_quest_available"
     type: "webhook" 
-    url: "https://chainquest-api.vercel.app/webhooks/new-quest"
+    url: "https://chainquest-backend.vercel.app/webhooks/new-quest"
     conditions:
       - action: "generate_daily_quests"
     payload:

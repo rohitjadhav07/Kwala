@@ -125,7 +125,7 @@ special_evolutions:
 notifications:
   - name: "evolution_completed"
     type: "webhook"
-    url: "https://chainquest-api.vercel.app/webhooks/evolution"
+    url: "https://chainquest-backend.vercel.app/webhooks/evolution"
     conditions:
       - action: "evolve_character"
     payload:
@@ -137,7 +137,7 @@ notifications:
       
   - name: "legendary_evolution_alert"
     type: "webhook"
-    url: "https://chainquest-api.vercel.app/webhooks/legendary-evolution"
+    url: "https://chainquest-backend.vercel.app/webhooks/legendary-evolution"
     conditions:
       - action: "legendary_evolution"
     payload:
