@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { ShoppingCart, TrendingUp, Zap, Star, Filter } from 'lucide-react';
+import { ShoppingCart, TrendingUp, Zap, Star, Filter, Package, Wallet } from 'lucide-react';
 import { useMarketplaceContract } from '../hooks/useMarketplaceContract';
+import { useMarketplace } from '../hooks/useMarketplace';
 
 const Marketplace = () => {
   const { address, isConnected } = useAccount();
-  const { listings, loading, buyNFT, isBuying } = useMarketplaceContract();
+  const { listings: contractListings, loading: contractLoading } = useMarketplaceContract();
+  const { 
+    listings, 
+    loading, 
+    buying, 
+    buyNFT, 
+    sellFromInventory, 
+    userInventory 
+  } = useMarketplace();
   const [filter, setFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('marketplace');
 
   const getRarityColor = (rarity) => {
     switch (rarity) {
@@ -41,6 +51,15 @@ const Marketplace = () => {
   const [selectedChain, setSelectedChain] = useState('all');
   const [selectedClass, setSelectedClass] = useState('all');
   const [sortBy, setSortBy] = useState('price_low');
+
+  const handleBuyNFT = async (listing) => {
+    try {
+      await buyNFT(listing.id);
+      alert(`Successfully purchased ${listing.name}!`);
+    } catch (error) {
+      alert(`Purchase failed: ${error.message}`);
+    }
+  };
 
   const filteredListings = listings.filter(listing => {
     // Price filter (convert to USD for comparison)
@@ -103,8 +122,35 @@ const Marketplace = () => {
         <p>Trade NFT characters seamlessly across multiple blockchains</p>
       </div>
 
-      {/* Kwala Trading Automation */}
-      <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+      {/* Tabs */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '1rem', 
+        marginBottom: '2rem',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <button
+          className={`btn ${activeTab === 'marketplace' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('marketplace')}
+          style={{ borderRadius: '8px 8px 0 0' }}
+        >
+          <ShoppingCart size={16} style={{ marginRight: '0.5rem' }} />
+          Marketplace ({listings.length})
+        </button>
+        <button
+          className={`btn ${activeTab === 'inventory' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('inventory')}
+          style={{ borderRadius: '8px 8px 0 0' }}
+        >
+          <Package size={16} style={{ marginRight: '0.5rem' }} />
+          My Inventory ({userInventory.length})
+        </button>
+      </div>
+
+      {activeTab === 'marketplace' && (
+        <>
+          {/* Kwala Trading Automation */}
+          <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
         <div className="card-header">
           <div className="card-icon">
             <Zap size={24} />
@@ -455,24 +501,41 @@ const Marketplace = () => {
               className="btn btn-primary" 
               style={{ 
                 width: '100%',
-                background: 'linear-gradient(135deg, #00ff88, #00cc66)',
+                background: buying ? 'linear-gradient(135deg, #666, #888)' : 'linear-gradient(135deg, #00ff88, #00cc66)',
                 border: 'none',
                 position: 'relative',
                 overflow: 'hidden'
               }}
-              onClick={() => buyNFT(listing.id)}
+              onClick={() => handleBuyNFT(listing)}
+              disabled={buying || listing.seller === address}
             >
-              <ShoppingCart size={16} style={{ marginRight: '0.5rem' }} />
-              Buy Now
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-                animation: 'shimmer 2s infinite'
-              }} />
+              {buying ? (
+                <>
+                  <div className="spinner" style={{ marginRight: '0.5rem' }}></div>
+                  Purchasing...
+                </>
+              ) : listing.seller === address ? (
+                <>
+                  <Wallet size={16} style={{ marginRight: '0.5rem' }} />
+                  Your Listing
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={16} style={{ marginRight: '0.5rem' }} />
+                  Buy Now
+                </>
+              )}
+              {!buying && listing.seller !== address && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '-100%',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                  animation: 'shimmer 2s infinite'
+                }} />
+              )}
             </button>
 
             {/* Seller Info */}
@@ -517,6 +580,157 @@ const Marketplace = () => {
           </div>
         </div>
       </div>
+        </>
+      )}
+
+      {activeTab === 'inventory' && (
+        <div>
+          <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+            <div className="card-header">
+              <div className="card-icon">
+                <Package size={24} />
+              </div>
+              <div className="card-title">My NFT Collection</div>
+            </div>
+            <div className="card-content">
+              <p>Manage your owned NFT characters. You can list them for sale on the marketplace.</p>
+            </div>
+          </div>
+
+          {userInventory.length === 0 ? (
+            <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <Package size={48} color="#666" style={{ marginBottom: '1rem' }} />
+              <h3>No NFTs in your collection</h3>
+              <p>Purchase some characters from the marketplace to get started!</p>
+              <button 
+                className="btn btn-primary"
+                onClick={() => setActiveTab('marketplace')}
+                style={{ marginTop: '1rem' }}
+              >
+                Browse Marketplace
+              </button>
+            </div>
+          ) : (
+            <div className="character-grid">
+              {userInventory.map((item) => (
+                <div key={item.id} className="character-card" style={{ 
+                  border: `2px solid ${getRarityColor(item.rarity)}40`,
+                  background: `linear-gradient(135deg, ${getRarityColor(item.rarity)}10, rgba(255,255,255,0.05))`
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    right: '1rem',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    background: '#00ff88',
+                    color: 'white'
+                  }}>
+                    OWNED
+                  </div>
+
+                  <div className="character-avatar" style={{
+                    background: `linear-gradient(135deg, ${getRarityColor(item.rarity)}, ${getRarityColor(item.rarity)}80)`,
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '12px'
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '3rem'
+                      }}>
+                        {getClassEmoji(item.class)}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="character-name">{item.name}</div>
+                  <div className="character-class">
+                    Level {item.level} {item.class.charAt(0).toUpperCase() + item.class.slice(1)}
+                  </div>
+                  
+                  <div className="character-stats">
+                    <div className="stat-item">
+                      <span>⚔️ STR</span>
+                      <span>{item.stats.strength}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span>🛡️ DEF</span>
+                      <span>{item.stats.defense}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span>⚡ SPD</span>
+                      <span>{item.stats.speed}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span>🔮 MAG</span>
+                      <span>{item.stats.magic}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    margin: '1rem 0',
+                    padding: '0.5rem',
+                    background: 'rgba(0, 255, 136, 0.1)',
+                    borderRadius: '8px'
+                  }}>
+                    <span>Battle Power: {item.battlePower?.toLocaleString() || 'N/A'}</span>
+                  </div>
+
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ 
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #ff6b35, #e55a2b)',
+                      border: 'none'
+                    }}
+                    onClick={() => {
+                      const price = prompt('Enter price in MATIC:');
+                      if (price && !isNaN(price)) {
+                        sellFromInventory(item, parseFloat(price));
+                        alert(`Listed ${item.name} for ${price} MATIC!`);
+                      }
+                    }}
+                  >
+                    <ShoppingCart size={16} style={{ marginRight: '0.5rem' }} />
+                    List for Sale
+                  </button>
+
+                  {item.purchaseDate && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      marginTop: '0.5rem',
+                      fontSize: '0.75rem',
+                      color: '#b0b0b0'
+                    }}>
+                      Purchased: {new Date(item.purchaseDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { Sword, Trophy, Users, Zap, Clock, Star, Gamepad2 } from 'lucide-react';
+import { Sword, Trophy, Users, Zap, Clock, Star, Gamepad2, Target, Play, X } from 'lucide-react';
 import { useTournaments } from '../hooks/useTournaments';
+import { useMultiplayerArena } from '../hooks/useMultiplayerArena';
 import ArenaGame from '../components/ArenaGame';
 import Leaderboard from '../components/Leaderboard';
 
 const Arena = () => {
   const { address, isConnected } = useAccount();
   const { tournaments, activeBattles, loading } = useTournaments();
+  const {
+    gameState,
+    currentMatch,
+    playerScore,
+    opponentScore,
+    timeLeft,
+    matchHistory,
+    findMatch,
+    playerAction,
+    leaveMatch,
+    returnToMenu
+  } = useMultiplayerArena();
   const [latestScore, setLatestScore] = useState(null);
-  const [activeTab, setActiveTab] = useState('game'); // game, tournaments, leaderboard
+  const [activeTab, setActiveTab] = useState('multiplayer'); // multiplayer, game, tournaments, leaderboard
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -73,11 +86,18 @@ const Arena = () => {
         paddingBottom: '1rem'
       }}>
         <button
+          className={`btn ${activeTab === 'multiplayer' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('multiplayer')}
+        >
+          <Users size={16} style={{ marginRight: '0.5rem' }} />
+          1v1 Battles
+        </button>
+        <button
           className={`btn ${activeTab === 'game' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('game')}
         >
           <Gamepad2 size={16} style={{ marginRight: '0.5rem' }} />
-          Arena Game
+          Solo Arena
         </button>
         <button
           className={`btn ${activeTab === 'leaderboard' ? 'btn-primary' : 'btn-secondary'}`}
@@ -94,6 +114,255 @@ const Arena = () => {
           Tournaments
         </button>
       </div>
+
+      {/* Multiplayer Battles Tab */}
+      {activeTab === 'multiplayer' && (
+        <div>
+          {gameState === 'menu' && (
+            <div>
+              <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
+                <div className="card-header">
+                  <div className="card-icon">
+                    <Users size={24} />
+                  </div>
+                  <div className="card-title">Real-Time 1v1 Battles</div>
+                </div>
+                <div className="card-content">
+                  <p>Challenge other players to real-time battles! Score more points than your opponent in 60 seconds to win rewards.</p>
+                  
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                    gap: '1rem',
+                    margin: '1.5rem 0'
+                  }}>
+                    <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(0, 255, 136, 0.1)', borderRadius: '12px' }}>
+                      <h4 style={{ color: '#00ff88' }}>🏆 Win Rewards</h4>
+                      <p>50 XP + 0.01 MATIC</p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(0, 212, 255, 0.1)', borderRadius: '12px' }}>
+                      <h4 style={{ color: '#00d4ff' }}>⚡ Fast Matches</h4>
+                      <p>60 second battles</p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255, 107, 53, 0.1)', borderRadius: '12px' }}>
+                      <h4 style={{ color: '#ff6b35' }}>🎯 Skill Based</h4>
+                      <p>Click accuracy matters</p>
+                    </div>
+                  </div>
+
+                  <button 
+                    className="btn btn-primary"
+                    onClick={findMatch}
+                    style={{ 
+                      width: '100%', 
+                      fontSize: '1.2rem', 
+                      padding: '1rem',
+                      background: 'linear-gradient(135deg, #00ff88, #00cc66)'
+                    }}
+                  >
+                    <Play size={20} style={{ marginRight: '0.5rem' }} />
+                    Find Match
+                  </button>
+                </div>
+              </div>
+
+              {/* Match History */}
+              {matchHistory.length > 0 && (
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <div className="card-icon">
+                      <Clock size={24} />
+                    </div>
+                    <div className="card-title">Recent Matches</div>
+                  </div>
+                  <div className="card-content">
+                    <div style={{ display: 'grid', gap: '1rem' }}>
+                      {matchHistory.slice(0, 5).map((match) => (
+                        <div 
+                          key={match.id}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '1rem',
+                            background: match.won ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 107, 53, 0.1)',
+                            borderRadius: '8px',
+                            border: `1px solid ${match.won ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 107, 53, 0.3)'}`
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 'bold', color: match.won ? '#00ff88' : '#ff6b35' }}>
+                              {match.won ? '🏆 Victory' : '💀 Defeat'}
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: '#b0b0b0' }}>
+                              vs {match.opponent.name}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: 'bold' }}>
+                              {match.playerScore} - {match.opponentScore}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: '#b0b0b0' }}>
+                              {new Date(match.timestamp).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {gameState === 'searching' && (
+            <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <div className="spinner" style={{ width: '60px', height: '60px', margin: '0 auto 2rem' }}></div>
+              <h2>Finding Opponent...</h2>
+              <p>Searching for players with similar skill level</p>
+              <button 
+                className="btn btn-secondary"
+                onClick={leaveMatch}
+                style={{ marginTop: '2rem' }}
+              >
+                Cancel Search
+              </button>
+            </div>
+          )}
+
+          {gameState === 'playing' && currentMatch && (
+            <div>
+              {/* Match Header */}
+              <div className="dashboard-card" style={{ marginBottom: '1rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  padding: '1rem'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>You</div>
+                    <div style={{ fontSize: '2rem', color: '#00ff88' }}>{playerScore}</div>
+                  </div>
+                  
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ff6b35' }}>
+                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#b0b0b0' }}>Time Left</div>
+                  </div>
+                  
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{currentMatch.opponent.name}</div>
+                    <div style={{ fontSize: '2rem', color: '#ff6b35' }}>{opponentScore}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Game Area */}
+              <div className="dashboard-card" style={{ marginBottom: '1rem' }}>
+                <div style={{ 
+                  height: '400px', 
+                  background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1))',
+                  borderRadius: '12px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  cursor: 'crosshair'
+                }}
+                onClick={playerAction}
+                >
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    textAlign: 'center',
+                    color: 'rgba(255, 255, 255, 0.7)'
+                  }}>
+                    <Target size={48} style={{ marginBottom: '1rem' }} />
+                    <h3>Click to Score Points!</h3>
+                    <p>The faster you click, the more points you earn</p>
+                  </div>
+                  
+                  {/* Animated background effects */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: `radial-gradient(circle at ${Math.random() * 100}% ${Math.random() * 100}%, rgba(0, 255, 136, 0.3), transparent 50%)`,
+                    animation: 'pulse 2s ease-in-out infinite'
+                  }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={leaveMatch}
+                  style={{ flex: 1 }}
+                >
+                  <X size={16} style={{ marginRight: '0.5rem' }} />
+                  Forfeit Match
+                </button>
+              </div>
+            </div>
+          )}
+
+          {gameState === 'finished' && currentMatch && (
+            <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>
+                {playerScore > opponentScore ? '🏆' : '💀'}
+              </div>
+              <h2 style={{ color: playerScore > opponentScore ? '#00ff88' : '#ff6b35' }}>
+                {playerScore > opponentScore ? 'Victory!' : 'Defeat!'}
+              </h2>
+              <div style={{ 
+                fontSize: '2rem', 
+                margin: '1rem 0',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '2rem'
+              }}>
+                <span style={{ color: '#00ff88' }}>{playerScore}</span>
+                <span>-</span>
+                <span style={{ color: '#ff6b35' }}>{opponentScore}</span>
+              </div>
+              <p style={{ marginBottom: '2rem' }}>
+                vs {currentMatch.opponent.name} (Level {currentMatch.opponent.level})
+              </p>
+              
+              {playerScore > opponentScore && (
+                <div style={{ 
+                  padding: '1rem',
+                  background: 'rgba(0, 255, 136, 0.1)',
+                  borderRadius: '12px',
+                  marginBottom: '2rem'
+                }}>
+                  <h4 style={{ color: '#00ff88' }}>Rewards Earned:</h4>
+                  <p>{currentMatch.reward}</p>
+                </div>
+              )}
+
+              <button 
+                className="btn btn-primary"
+                onClick={returnToMenu}
+                style={{ marginRight: '1rem' }}
+              >
+                Return to Menu
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={findMatch}
+              >
+                Find Another Match
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Arena Game Tab */}
       {activeTab === 'game' && (

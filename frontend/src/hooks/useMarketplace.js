@@ -5,6 +5,8 @@ export function useMarketplace() {
   const { address, isConnected } = useAccount();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [buying, setBuying] = useState(false);
+  const [userInventory, setUserInventory] = useState([]);
 
   const marketplaceListings = [
     {
@@ -138,39 +140,122 @@ export function useMarketplace() {
 
   ];
 
+  // Load user inventory and marketplace data
   useEffect(() => {
     if (isConnected && address) {
-      setTimeout(() => {
+      // Load user inventory from localStorage
+      const savedInventory = localStorage.getItem(`user_inventory_${address}`);
+      if (savedInventory) {
+        setUserInventory(JSON.parse(savedInventory));
+      }
+
+      // Load marketplace listings
+      const savedListings = localStorage.getItem('marketplace_listings');
+      if (savedListings) {
+        setListings(JSON.parse(savedListings));
+      } else {
         setListings(marketplaceListings);
-        setLoading(false);
-      }, 1000);
+        localStorage.setItem('marketplace_listings', JSON.stringify(marketplaceListings));
+      }
+      
+      setLoading(false);
     } else {
       setListings([]);
       setLoading(false);
     }
   }, [isConnected, address]);
 
-  const buyNFT = (listingId) => {
-    setListings(prev => prev.filter(listing => listing.id !== listingId));
-    return Promise.resolve();
+  const buyNFT = async (listingId) => {
+    setBuying(true);
+    
+    try {
+      // Find the listing
+      const listing = listings.find(l => l.id === listingId);
+      if (!listing) throw new Error('Listing not found');
+
+      // Simulate transaction delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Add to user inventory
+      const newInventory = [...userInventory, { ...listing, purchaseDate: new Date().toISOString() }];
+      setUserInventory(newInventory);
+      localStorage.setItem(`user_inventory_${address}`, JSON.stringify(newInventory));
+
+      // Remove from marketplace
+      const updatedListings = listings.filter(listing => listing.id !== listingId);
+      setListings(updatedListings);
+      localStorage.setItem('marketplace_listings', JSON.stringify(updatedListings));
+
+      // Track quest progress
+      const questProgress = JSON.parse(localStorage.getItem(`quest_progress_${address}`) || '{}');
+      questProgress.marketplacePurchases = (questProgress.marketplacePurchases || 0) + 1;
+      localStorage.setItem(`quest_progress_${address}`, JSON.stringify(questProgress));
+
+      setBuying(false);
+      return { success: true };
+    } catch (error) {
+      setBuying(false);
+      throw error;
+    }
   };
 
-  const listNFT = (nftData) => {
-    const newListing = {
-      id: Date.now(),
-      ...nftData,
-      seller: address,
-      timeLeft: "7d 0h"
-    };
-    setListings(prev => [newListing, ...prev]);
-    return Promise.resolve();
+  const listNFT = async (nftData) => {
+    try {
+      const newListing = {
+        id: Date.now(),
+        ...nftData,
+        seller: address,
+        timeLeft: "7d 0h"
+      };
+      
+      const updatedListings = [newListing, ...listings];
+      setListings(updatedListings);
+      localStorage.setItem('marketplace_listings', JSON.stringify(updatedListings));
+
+      // Track quest progress
+      const questProgress = JSON.parse(localStorage.getItem(`quest_progress_${address}`) || '{}');
+      questProgress.marketplaceSales = (questProgress.marketplaceSales || 0) + 1;
+      localStorage.setItem(`quest_progress_${address}`, JSON.stringify(questProgress));
+
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const sellFromInventory = async (inventoryItem, price) => {
+    try {
+      // Remove from inventory
+      const updatedInventory = userInventory.filter(item => item.id !== inventoryItem.id);
+      setUserInventory(updatedInventory);
+      localStorage.setItem(`user_inventory_${address}`, JSON.stringify(updatedInventory));
+
+      // Add to marketplace
+      await listNFT({
+        ...inventoryItem,
+        price: `${price} MATIC`,
+        priceUSD: `$${(price * 0.8).toFixed(2)}` // Rough MATIC to USD conversion
+      });
+
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
   };
 
   return {
     listings,
     loading,
+    buying,
     buyNFT,
     listNFT,
-    refetch: () => {}
+    sellFromInventory,
+    userInventory,
+    refetch: () => {
+      const savedListings = localStorage.getItem('marketplace_listings');
+      if (savedListings) {
+        setListings(JSON.parse(savedListings));
+      }
+    }
   };
 }

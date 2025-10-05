@@ -3,12 +3,14 @@ import { useAccount, useContractWrite, usePrepareContractWrite, useWaitForTransa
 import { parseEther } from 'viem';
 import aiImageService from '../services/aiImageService';
 import { CONTRACT_ADDRESSES, CHARACTER_ABI } from '../config/contracts';
+import { useQuests } from '../hooks/useQuests';
 import { Wand2, Sparkles, Download, RefreshCw, Palette, Zap, Upload, AlertCircle } from 'lucide-react';
 import AICharacterGenerator from './AICharacterGenerator';
 
 const CharacterMint = () => {
   const { address, isConnected } = useAccount();
   const { chain } = useNetwork();
+  const { trackCharacterMinted } = useQuests();
   const [selectedClass, setSelectedClass] = useState('warrior');
   const [generatedCharacter, setGeneratedCharacter] = useState(null);
   const [minting, setMinting] = useState(false);
@@ -167,6 +169,9 @@ const CharacterMint = () => {
       setMintSuccess(true);
       setMinting(false);
       
+      // Track quest progress
+      trackCharacterMinted();
+      
       // Reset after showing success
       setTimeout(() => {
         setMintSuccess(false);
@@ -174,7 +179,7 @@ const CharacterMint = () => {
         setIpfsData(null);
       }, 5000);
     }
-  }, [isConfirmed]);
+  }, [isConfirmed, trackCharacterMinted]);
 
   // Handle write errors
   useEffect(() => {

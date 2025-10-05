@@ -5,8 +5,28 @@ export function useQuests() {
   const { address, isConnected } = useAccount();
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userProgress, setUserProgress] = useState({});
 
-  const questTemplates = [
+  // Load user progress from localStorage
+  useEffect(() => {
+    if (address) {
+      const savedProgress = localStorage.getItem(`quest_progress_${address}`);
+      if (savedProgress) {
+        setUserProgress(JSON.parse(savedProgress));
+      }
+    }
+  }, [address]);
+
+  // Save progress to localStorage
+  const saveProgress = (newProgress) => {
+    if (address) {
+      localStorage.setItem(`quest_progress_${address}`, JSON.stringify(newProgress));
+      setUserProgress(newProgress);
+    }
+  };
+
+  // Get dynamic quest templates with real progress
+  const getQuestTemplates = () => [
     {
       id: 1,
       title: "First Steps",
@@ -14,10 +34,10 @@ export function useQuests() {
       type: "daily",
       chain: "polygon",
       target: 1,
-      progress: 0,
-      reward: "100 XP + 50 MATIC",
+      progress: userProgress.charactersOwned || 0,
+      reward: "100 XP + 0.05 MATIC",
       timeLeft: "23h 45m",
-      status: "active",
+      status: (userProgress.charactersOwned || 0) >= 1 ? "completed" : "active",
       autoTracked: true
     },
     {
@@ -27,10 +47,10 @@ export function useQuests() {
       type: "daily",
       chain: "multi",
       target: 500,
-      progress: 0,
+      progress: userProgress.arenaHighScore || 0,
       reward: "200 XP + Rare Item Box",
       timeLeft: "23h 45m",
-      status: "active",
+      status: (userProgress.arenaHighScore || 0) >= 500 ? "completed" : "active",
       autoTracked: true
     },
     {
@@ -38,77 +58,64 @@ export function useQuests() {
       title: "Marketplace Explorer",
       description: "Browse and purchase an NFT from the marketplace",
       type: "daily",
-      chain: "ethereum",
+      chain: "polygon",
       target: 1,
-      progress: 0,
-      reward: "150 XP + 0.01 ETH",
+      progress: userProgress.marketplacePurchases || 0,
+      reward: "150 XP + 0.05 MATIC",
       timeLeft: "23h 45m",
-      status: "active",
+      status: (userProgress.marketplacePurchases || 0) >= 1 ? "completed" : "active",
       autoTracked: true
     },
     {
       id: 4,
-      title: "Cross-Chain Master",
-      description: "Complete transactions on 3 different blockchains",
+      title: "Battle Master",
+      description: "Win 5 arena battles in a row",
       type: "weekly",
       chain: "multi",
-      target: 3,
-      progress: 1,
-      reward: "1000 XP + Legendary Character",
+      target: 5,
+      progress: userProgress.battleWinStreak || 0,
+      reward: "500 XP + Champion Title",
       timeLeft: "6d 12h",
-      status: "active",
+      status: (userProgress.battleWinStreak || 0) >= 5 ? "completed" : "active",
       autoTracked: true
     },
     {
       id: 5,
-      title: "Tournament Champion",
-      description: "Win 5 arena battles in a row",
+      title: "NFT Collector",
+      description: "Own 5 different NFT characters",
       type: "achievement",
       chain: "multi",
       target: 5,
-      progress: 2,
-      reward: "500 XP + Champion Title",
+      progress: userProgress.charactersOwned || 0,
+      reward: "1000 XP + Collector Badge",
       timeLeft: "No limit",
-      status: "active",
+      status: (userProgress.charactersOwned || 0) >= 5 ? "completed" : "active",
       autoTracked: true
     },
     {
       id: 6,
-      title: "NFT Collector",
-      description: "Own 10 different NFT characters",
-      type: "achievement",
-      chain: "multi",
-      target: 10,
-      progress: 3,
-      reward: "2000 XP + Collector Badge",
-      timeLeft: "No limit",
-      status: "active",
+      title: "Trader",
+      description: "Complete 3 marketplace transactions",
+      type: "weekly",
+      chain: "polygon",
+      target: 3,
+      progress: (userProgress.marketplacePurchases || 0) + (userProgress.marketplaceSales || 0),
+      reward: "300 XP + Trading Badge",
+      timeLeft: "6d 12h",
+      status: ((userProgress.marketplacePurchases || 0) + (userProgress.marketplaceSales || 0)) >= 3 ? "completed" : "active",
       autoTracked: true
     },
     {
       id: 7,
-      title: "Evolution Master",
-      description: "Evolve a character to stage 5",
-      type: "weekly",
-      chain: "polygon",
-      target: 1,
-      progress: 0,
-      reward: "800 XP + Evolution Catalyst",
-      timeLeft: "6d 12h",
-      status: "active",
-      autoTracked: true
-    },
-    {
-      id: 8,
       title: "Welcome Bonus",
       description: "Connect your wallet and explore ChainQuest",
       type: "daily",
       chain: "multi",
       target: 1,
-      progress: 1,
+      progress: isConnected ? 1 : 0,
       reward: "50 XP + Welcome Package",
-      timeLeft: "Completed",
-      status: "completed",
+      timeLeft: isConnected ? "Completed" : "Connect wallet",
+      status: isConnected ? "completed" : "active",
       autoTracked: true
     }
   ];
@@ -116,14 +123,14 @@ export function useQuests() {
   useEffect(() => {
     if (isConnected && address) {
       setTimeout(() => {
-        setQuests(questTemplates);
+        setQuests(getQuestTemplates());
         setLoading(false);
       }, 1000);
     } else {
       setQuests([]);
       setLoading(false);
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, userProgress]);
 
   const completeQuest = (questId) => {
     setQuests(prev => prev.map(quest => 
@@ -145,11 +152,68 @@ export function useQuests() {
     ));
   };
 
+  // Functions to update user progress for different actions
+  const trackCharacterMinted = () => {
+    const newProgress = {
+      ...userProgress,
+      charactersOwned: (userProgress.charactersOwned || 0) + 1
+    };
+    saveProgress(newProgress);
+  };
+
+  const trackArenaScore = (score) => {
+    const newProgress = {
+      ...userProgress,
+      arenaHighScore: Math.max(userProgress.arenaHighScore || 0, score)
+    };
+    saveProgress(newProgress);
+  };
+
+  const trackBattleWin = () => {
+    const newProgress = {
+      ...userProgress,
+      battleWinStreak: (userProgress.battleWinStreak || 0) + 1,
+      totalBattleWins: (userProgress.totalBattleWins || 0) + 1
+    };
+    saveProgress(newProgress);
+  };
+
+  const trackBattleLoss = () => {
+    const newProgress = {
+      ...userProgress,
+      battleWinStreak: 0 // Reset win streak on loss
+    };
+    saveProgress(newProgress);
+  };
+
+  const trackMarketplacePurchase = () => {
+    const newProgress = {
+      ...userProgress,
+      marketplacePurchases: (userProgress.marketplacePurchases || 0) + 1
+    };
+    saveProgress(newProgress);
+  };
+
+  const trackMarketplaceSale = () => {
+    const newProgress = {
+      ...userProgress,
+      marketplaceSales: (userProgress.marketplaceSales || 0) + 1
+    };
+    saveProgress(newProgress);
+  };
+
   return {
     quests,
     loading,
     completeQuest,
     updateQuestProgress,
-    refetch: () => {}
+    trackCharacterMinted,
+    trackArenaScore,
+    trackBattleWin,
+    trackBattleLoss,
+    trackMarketplacePurchase,
+    trackMarketplaceSale,
+    userProgress,
+    refetch: () => setQuests(getQuestTemplates())
   };
 }
