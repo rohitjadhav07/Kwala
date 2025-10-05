@@ -1,0 +1,56 @@
+Name: ChainQuest Quest Automation
+Trigger:
+TriggerSourceContract: 0x0aF5DACFe9DeAAf38413D55CeC0F16a850ED162D
+TriggerChainID: 80002
+TriggerEventName: Transfer(address,address,uint256)
+TriggerEventFilter: from=0x0000000000000000000000000000000000000000
+TriggerSourceContractABI: W3siaW5wdXRzIjpbeyJpbnRlcm5hbFR5cGUiOiJhZGRyZXNzIiwibmFtZSI6InRvIiwidHlwZSI6ImFkZHJlc3MifSx7ImludGVybmFsVHlwZSI6InVpbnQyNTYiLCJuYW1lIjoidG9rZW5JZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbnRlcm5hbFR5cGUiOiJzdHJpbmciLCJuYW1lIjoidXJpIiwidHlwZSI6InN0cmluZyJ9XSwibmFtZSI6Im1pbnQiLCJvdXRwdXRzIjpbXSwic3RhdGVNdXRhYmlsaXR5Ijoibm9ucGF5YWJsZSIsInR5cGUiOiJmdW5jdGlvbiJ9LHsiaW5wdXRzIjpbeyJpbnRlcm5hbFR5cGUiOiJhZGRyZXNzIiwibmFtZSI6ImZyb20iLCJ0eXBlIjoiYWRkcmVzcyJ9LHsiaW50ZXJuYWxUeXBlIjoiYWRkcmVzcyIsIm5hbWUiOiJ0byIsInR5cGUiOiJhZGRyZXNzIn0seyJpbnRlcm5hbFR5cGUiOiJ1aW50MjU2IiwibmFtZSI6InRva2VuSWQiLCJ0eXBlIjoidWludDI1NiJ9XSwibmFtZSI6InRyYW5zZmVyRnJvbSIsIm91dHB1dHMiOltdLCJzdGF0ZU11dGFiaWxpdHkiOiJub25wYXlhYmxlIiwidHlwZSI6ImZ1bmN0aW9uIn0seyJhbm9ueW1vdXMiOmZhbHNlLCJpbnB1dHMiOlt7ImluZGV4ZWQiOnRydWUsImludGVybmFsVHlwZSI6ImFkZHJlc3MiLCJuYW1lIjoiZnJvbSIsInR5cGUiOiJhZGRyZXNzIn0seyJpbmRleGVkIjp0cnVlLCJpbnRlcm5hbFR5cGUiOiJhZGRyZXNzIiwibmFtZSI6InRvIiwidHlwZSI6ImFkZHJlc3MifSx7ImluZGV4ZWQiOnRydWUsImludGVybmFsVHlwZSI6InVpbnQyNTYiLCJuYW1lIjoidG9rZW5JZCIsInR5cGUiOiJ1aW50MjU2In1dLCJuYW1lIjoiVHJhbnNmZXIiLCJ0eXBlIjoiZXZlbnQifV0=
+TriggerPrice: NA
+RecurringSourceContract: NA
+RecurringChainID: NA
+RecurringEventName: NA
+RecurringEventFilter: NA
+RecurringSourceContractABI: NA
+RecurringPrice: NA
+RepeatEvery: event
+ExecuteAfter: event
+ExpiresIn: 1781796603
+Meta: NA
+ActionStatusNotificationPOSTURL: https://chainquest-backend.vercel.app/webhooks/quest-completed
+ActionStatusNotificationAPIKey: NA
+Actions:
+- Name: complete_mint_quest
+  Type: post
+  APIEndpoint: https://chainquest-backend.vercel.app/webhooks/quest-completed
+  APIPayload:
+    player: "{{event.to}}"
+    questId: "mint_character"
+    rewards:
+      tokens: 500
+      xp: 250
+    tokenId: "{{event.tokenId}}"
+    chain: "polygon-amoy"
+  TargetContract: NA
+  TargetFunction: NA
+  TargetParams: NA
+  ChainID: NA
+  EncodedABI: NA
+  Bytecode: NA
+  Metadata: NA
+  RetriesUntilSuccess: 2
+- Name: generate_new_quests
+  Type: post
+  APIEndpoint: https://chainquest-backend.vercel.app/api/quests/generate
+  APIPayload:
+    player: "{{event.to}}"
+    trigger: "character_mint"
+  TargetContract: NA
+  TargetFunction: NA
+  TargetParams: NA
+  ChainID: NA
+  EncodedABI: NA
+  Bytecode: NA
+  Metadata: NA
+  RetriesUntilSuccess: 2
+Execution:
+  Mode: sequential
